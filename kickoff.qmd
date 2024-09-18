@@ -1,0 +1,69 @@
+---
+title: "MSBBSS thesis"
+subtitle: "in the Missing Data team"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Planning
+
+Let's set some deadlines
+
+|     | Wk   | Focus of this week                                        | Finish this week (deliverables)      |
+|-----|------|-----------------------------------------------------------|--------------------------------------|
+| 0   |      | Set-up: read course documents and project information      |                                      |
+| 1   | 11/9 | Kick-off: discuss agreements, start project                |                                      |
+| 2   |      | Introduction section: formulate data science problem       | Outline research repository          |
+| 3   |      | Simulation setup: explore data, program simulation study   | Introduction section                 |
+| 4   |      | Methods section: describe data and simulation setup        | Simulation setup                     |
+| 5   |      | Simulation results: present results (tables/figures)       | Methods section                      |
+| 6   |      | Results section: interpret and describe results            | Simulation results                   |
+| 7   |      | Discussion section: write conclusion, discuss implications | Results section                      |
+| 8   |      | Other requirements: e.g., title page, abstract, appendix   | Discussion section                   |
+| 9   |      | Revision: check all components, re-write if necessary      | Complete draft                       |
+| 10  |      | Finalization: hand in thesis, prepare presentation         | Complete research repository         |
+|     |      | Thesis deadline:                                           |                                      |
+| 11  |      | Thesis defense:                                            |                                      |
+
+
+# Thesis proposal 
+
+Missing data are ubiquitous in the human data sciences. If not addressed properly, missing values can cause undefined or invalid analysis results.  A popular solution is to impute (i.e. fill in) each missing value in an incomplete dataset multiple times. The resulting multiply imputed datasets can then be analyzed as if they were complete, and subsequent pooling will yield confidence-valid statistics (Rubin, 1987; van Buuren 2018).
+
+Imputing missing values is not a trivial ordeal. The imputer needs to define one or more imputation models to generate imputations. For valid inference, these imputation models should (I) capture the empirical multivariate structure in the data, and (II) add the proper amount of variability to reflect the uncertainty due to missingness. Deep learning offers a promising approach, where neural networks are used as imputation models (Mattei & Frellsen, 2019; Friedjungová et al., 2020; Ma et al., 2020; Ma et al., 2023; Zhang, 2023). Denoising and variational autoencoders seem to be especially well-suited to meet the first requirement: generating imputed values that mimic the multivariate structure of the incomplete data . The current literature does not address the second requirement: the confidence-validity of the estimates after imputation. It may well be that the imputed values exacerbate the multivariate relations in the data and would thus lead to spuriously low p-values for the analyses of interest. In this thesis project, you will implement and evaluate multiple imputation by means of a neural network, and compare it to current state-of-the-art methods to deal with missing data. 
+ 
+Required skills: programming in R, willingness to learn git (and GitHub) for version control, willingness to gain experience with TensorFlow for deep learning
+ 
+Literature:
+
+- Buuren, S. van (2018).  Flexible Imputation of Missing Data. https://stefvanbuuren.name/fimd
+- Friedjungová, M., Vašata, D., Balatsko, M., & Jiřina, M. (2020). Missing Features Reconstruction Using a - Wasserstein Generative Adversarial Imputation Network. Computational Science – ICCS 2020 (pp. 225–239). Springer International Publishing. https://doi.org/10.1007/978-3-030-50423-6_17 
+- Ma, Q., Lee, W.-C., Fu, T.-Y., Gu, Y., & Yu, G. (2020). MIDIA: Exploring denoising autoencoders for missing data imputation. Data Mining and Knowledge Discovery, 34(6), 1859–1897. https://doi.org/10.1007/s10618-020-00706-8
+- Ma, Q., Li, X., Bai, M., Wang, X., Ning, B., & Li, G. (2023). MIVAE: Multiple Imputation based on Variational Auto-Encoder. Engineering Applications of Artificial Intelligence, 123, 106270. https://doi.org/10.1016/j.engappai.2023.106270 
+- Mattei, P.-A., & Frellsen, J. (2019). MIWAE: Deep Generative Modelling and Imputation of Incomplete Data Sets. Proceedings of the 36th International Conference on Machine Learning, 4413–4423. https://proceedings.mlr.press/v97/mattei19a.html 
+- Rubin, D. B. (1987). Multiple Imputation for nonresponse in surveys. Wiley. 
+- Zhang, Y., Zhang, R., & Zhao, B. (2023). A systematic review of generative adversarial imputation network in missing data imputation. Neural Computing and Applications, 35(27), 19685–19705. https://doi.org/10.1007/s00521-023-08840-2
+
+# Recommended reading
+
+We encourage you to make yourself familiar with the topic of missing data imputation. The following resources provide a crash course into the topic, all of which may be read in whole, but we encourage you to at least consider:
+
+- Section 1.1 through 1.4 from [Flexible Imputation of Missing Data](https://stefvanbuuren.name/fimd/), also take a look at section 2.5.2 to see how we usually evaluate imputation methods;
+- The `mice` vignettes 1 through 3 from [amices.org](https://amices.org/), preferably the new version (under development) via [https://github.com/heleenbrueggen/newVignettes/tree/newVignettesBook](https://github.com/heleenbrueggen/newVignettes/tree/newVignettesBook);
+- Look at the 'PLANNING' part of [Table 1](https://onlinelibrary.wiley.com/doi/10.1002/sim.8086#sim8086-tbl-0001) in Morris et al. (2019), and use section 1 and 3 to get familiar with the 'ADEMP' structure for simulation studies described here;
+- Look at [Table 2](https://www.gerkovink.com/evaluation) in Oberman & Vink (2023) to get an idea of the choices that you will be faced with in setting up your simulation study.
+- Skim over the different steps in this simulation study (you don't have to understand the contents yet!) to get a feeling of what your end-product might look like [https://www.gerkovink.com/simulate/](https://www.gerkovink.com/simulate/)
+
+
+# Other recommendations
+
+- Make sure you know your way around `R`, see e.g. [this crash course](https://www.gerkovink.com/prepR/).
+- Update all of your software now, so you'll work with the most recent (and hopefully least buggy) versions of e.g. `R`, `Python`, `RStudio`, and packages;
+- Check out [this course page](https://www.gerkovink.com/markup/) on why and how to keep track of your code with `git`;
+- Set up a GitHub account, if you haven't already (students can get 'pro' for free [here](https://education.github.com/students));
+- Brush up on your scientific writing skills, e.g. by reading [The Science of Scientific Writing](https://www.americanscientist.org/blog/the-long-view/the-science-of-scientific-writing) [-@gope90] or by planning a visit to the university's [Skills Lab](https://students.uu.nl/en/guidance-and-development/skills-lab).
+
+
