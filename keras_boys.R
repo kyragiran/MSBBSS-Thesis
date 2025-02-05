@@ -29,7 +29,8 @@ boys_numeric <- boys %>%
   mutate(across(where(is.factor), as.numeric))
 
 # Handle missing values: Fill with column mean temporarily
-boys_numeric[is.na(boys_numeric)] <- apply(boys_numeric, 2, function(x) mean(x, na.rm = TRUE))
+boys_numeric <- mice(boys_numeric, method="mean", m=1, maxit=1) %>% complete()
+#boys_numeric[is.na(boys_numeric)] <- apply(boys_numeric, 2, function(x) mean(x, na.rm = TRUE))
 
 # Normalize data
 boys_scaled <- boys_numeric %>%
