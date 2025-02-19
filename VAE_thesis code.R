@@ -18,7 +18,7 @@ df <- as.data.frame(data)
 df$y <- c(as.matrix(data) %*% c(rep(0.2, 4), rep(0, p-4)) + rnorm(n, 0, 1))
 
 # Introduce missingness (50% MCAR)
-amputed_data <- ampute(df, prop = 0.5, mech = "MCAR")$amp  
+amputed_data <- mice::ampute(df, prop = 0.5, mech = "MCAR")$amp  
 
 # Convert to matrix
 data_matrix <- as.matrix(amputed_data)
