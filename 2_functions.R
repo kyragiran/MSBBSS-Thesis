@@ -1,8 +1,18 @@
-library(torch)
-library(dplyr)
-library(ggplot2)
-library(Metrics)
-library(mice)
+do_single_imputation <- function(data) {
+  for (col in names(data)) {
+    if (any(is.na(data[[col]]))) {
+      data[[col]][is.na(data[[col]])] <- mean(data[[col]], na.rm = TRUE)
+    }
+  }
+  return(data)
+}
+
+do_multiple_imputation <- function(data, m = 5) {
+  imp <- mice(data, method = "pmm", m = m, maxit = 5)
+  return(lapply(1:m, function(i) complete(imp, i)))
+}
+
+
 
 # VAE Training and Imputation Function
 train_vae_and_impute <- function(data, m = 5, epochs = 100, latent_dim = 2, lr = 0.001) {
@@ -116,3 +126,4 @@ evaluate_vae_imputation <- function(imputed_list, true_coefs) {
   bias_list <- lapply(coef_list, function(coefs) coefs - true_coefs)
   return(list(rmse_values = rmse_values, bias_per_imputation = bias_list))
 }
+
