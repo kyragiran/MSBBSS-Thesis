@@ -8,7 +8,7 @@ do_single_imputation <- function(data) {
 }
 
 do_multiple_imputation <- function(data, m = 5) {
-  imp <- mice(data, method = "pmm", m = m, maxit = 5)
+  imp <- mice(data, method = "pmm", m = m, maxit = 5, print = FALSE)
   return(lapply(1:m, function(i) complete(imp, i)))
 }
 
@@ -119,11 +119,27 @@ train_vae_and_impute <- function(data, m = 5, epochs = 100, latent_dim = 2, lr =
 evaluate_vae_imputation <- function(imputed_list, true_coefs) {
   models <- lapply(imputed_list, function(data) lm(y ~ V1 + V2 + V3 + V4, data = data))
   coef_list <- lapply(models, coef)
+  CI_list <- lapply(models, confint)
+  ci_check <- lapply(CI_list, function(x) {x[,2] > true_coefs & x[,1] < true_coefs})
   rmse_values <- sapply(models, function(mod) {
     preds <- predict(mod, newdata = imputed_list[[1]])
     sqrt(mean((imputed_list[[1]]$y - preds)^2))
   })
-  bias_list <- lapply(coef_list, function(coefs) coefs - true_coefs)
+  bias_list <- lapply(coef_list, function(coefs) coefs - true_coefs) # coefs should be averaged, bias should also be pooled
   return(list(rmse_values = rmse_values, bias_per_imputation = bias_list))
 }
+
+
+imputed_list =  do_multiple_imputation(missing_datasets[[1]])
+
+confidence_intervals <- confint(models[[1]])
+#models is a models list and the func is not gonna work on a list 
+
+confidence_int_bounds <- confidence_intervals[, c("2.5 %", "97.5 %")] 
+ci_check <- confidence_int_bounds[-1, 1] < true_coefs & confidence_int_bounds[-1, 2] > true_coefs
+print(ci_check)
+
+
+
+
 
