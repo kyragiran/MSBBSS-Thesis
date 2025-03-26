@@ -1,9 +1,9 @@
 library(MASS)  
 library(mice) 
 library(Matrix)
-install.packages("MASS")
-install.packages("mice")
-install.packages("Matrix")
+#install.packages("MASS")
+#install.packages("mice")
+#install.packages("Matrix")
 
 
 set.seed(123)  

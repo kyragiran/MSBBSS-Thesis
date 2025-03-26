@@ -20,8 +20,8 @@ library(doFuture)
 Sys.setenv(CUDA_VISIBLE_DEVICES = "")
 library(torch)
 
-install.packages("pak")  # One-time installation
-pak::pkg_install("torch")
+#install.packages("pak")  # One-time installation
+#pak::pkg_install("torch")
 
 library(torch)
 
