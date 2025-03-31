@@ -1,3 +1,10 @@
+# 2_functions.R
+
+library(mice)
+library(torch)
+
+# --- Imputation Functions ---
+
 do_single_imputation <- function(data) {
   for (col in names(data)) {
     if (any(is.na(data[[col]]))) {
@@ -12,9 +19,6 @@ do_multiple_imputation <- function(data, m = 5) {
   return(lapply(1:m, function(i) complete(imp, i)))
 }
 
-
-
-# VAE Training and Imputation Function
 train_vae_and_impute <- function(data, m = 5, epochs = 100, latent_dim = 2, lr = 0.001) {
   data_matrix <- as.matrix(data)
   missing_mask <- ifelse(is.na(data_matrix), 0, 1)
@@ -22,7 +26,6 @@ train_vae_and_impute <- function(data, m = 5, epochs = 100, latent_dim = 2, lr =
   data_tensor <- torch_tensor(data_matrix, dtype = torch_float())
   mask_tensor <- torch_tensor(missing_mask, dtype = torch_float())
   
-  # Encoder module
   encoder_module <- nn_module(
     "encoder_module",
     initialize = function(in_features, latent_dim) {
@@ -41,7 +44,6 @@ train_vae_and_impute <- function(data, m = 5, epochs = 100, latent_dim = 2, lr =
     }
   )
   
-  # Decoder module
   decoder_module <- nn_module(
     "decoder_module",
     initialize = function(latent_dim, out_features) {
@@ -56,7 +58,6 @@ train_vae_and_impute <- function(data, m = 5, epochs = 100, latent_dim = 2, lr =
     }
   )
   
-  # VAE model
   vae_module <- nn_module(
     "vae_module",
     initialize = function(in_features, latent_dim) {
@@ -79,22 +80,19 @@ train_vae_and_impute <- function(data, m = 5, epochs = 100, latent_dim = 2, lr =
     }
   )
   
-  # Loss function
   vae_loss <- function(output_list, input, mask) {
     reconstruction <- output_list[[1]]
     mu <- output_list[[2]]
     logvar <- output_list[[3]]
     recon_loss <- nnf_mse_loss(reconstruction * mask, input * mask, reduction = "sum") / torch_sum(mask)
-    kl_div <- -0.5 * torch_mean(1 + logvar - mu^2 - torch_exp(logvar)) * 2  
+    kl_div <- -0.5 * torch_mean(1 + logvar - mu^2 - torch_exp(logvar)) * 2
     recon_loss + kl_div
   }
   
-  # Model initialization
   input_dim <- ncol(data_tensor)
   vae <- vae_module(input_dim, latent_dim)
   optimizer <- optim_adam(vae$parameters, lr = lr)
   
-  # Training Loop
   for (epoch in seq_len(epochs)) {
     optimizer$zero_grad()
     output_list <- vae(data_tensor)
@@ -103,11 +101,10 @@ train_vae_and_impute <- function(data, m = 5, epochs = 100, latent_dim = 2, lr =
     optimizer$step()
   }
   
-  # Generate imputed datasets
   imputed_datasets <- list()
   for (i in 1:m) {
     output_list <- vae(data_tensor)
-    imputed_data <- as_array(output_list[[1]]$detach())  
+    imputed_data <- as_array(output_list[[1]]$detach())
     final_data <- data_matrix
     final_data[missing_mask == 0] <- imputed_data[missing_mask == 0]
     imputed_datasets[[i]] <- as.data.frame(final_data)
@@ -115,31 +112,44 @@ train_vae_and_impute <- function(data, m = 5, epochs = 100, latent_dim = 2, lr =
   return(imputed_datasets)
 }
 
-# Evaluation Function
+# --- Evaluation Functions ---
+
+evaluate_single_imputation <- function(imputed_data, true_coefs) {
+  model <- lm(y ~ V1 + V2 + V3 + V4, data = imputed_data)
+  ci <- confint(model)
+  est <- coef(model)
+  ci_coverage <- (ci[2:5, 1] < true_coefs[2:5]) & (ci[2:5, 2] > true_coefs[2:5])
+  rmse <- sqrt(mean((predict(model, newdata = imputed_data) - imputed_data$y)^2))
+  bias <- est[2:5] - true_coefs[2:5]
+  return(list(rmse_values = rmse, bias = bias, confidence_interval_coverage = ci_coverage))
+}
+
+evaluate_multiple_imputation <- function(imputed_list, true_coefs) {
+  models <- lapply(imputed_list, function(data) lm(y ~ V1 + V2 + V3 + V4, data = data))
+  pooled <- pool(models)
+  pooled_summary <- summary(pooled, conf.int = TRUE)
+  pooled_est <- pooled_summary$estimate[2:5]
+  lower <- pooled_summary$`2.5 %`[2:5]
+  upper <- pooled_summary$`97.5 %`[2:5]
+  ci_coverage <- (lower < true_coefs[2:5]) & (upper > true_coefs[2:5])
+  bias <- pooled_est - true_coefs[2:5]
+  rmse_list <- lapply(imputed_list, function(data) {
+    mod <- lm(y ~ V1 + V2 + V3 + V4, data = data)
+    sqrt(mean((predict(mod, newdata = data) - data$y)^2))
+  })
+  return(list(rmse_values = mean(unlist(rmse_list)), bias = bias, confidence_interval_coverage = ci_coverage))
+}
+
 evaluate_vae_imputation <- function(imputed_list, true_coefs) {
   models <- lapply(imputed_list, function(data) lm(y ~ V1 + V2 + V3 + V4, data = data))
   coef_list <- lapply(models, coef)
   CI_list <- lapply(models, confint)
-  ci_check <- lapply(CI_list, function(x) {x[,2] > true_coefs & x[,1] < true_coefs})
+  ci_check <- lapply(CI_list, function(x) (x[2:5, 1] < true_coefs[2:5]) & (x[2:5, 2] > true_coefs[2:5]))
   rmse_values <- sapply(models, function(mod) {
     preds <- predict(mod, newdata = imputed_list[[1]])
     sqrt(mean((imputed_list[[1]]$y - preds)^2))
   })
-  bias_list <- lapply(coef_list, function(coefs) coefs - true_coefs) # coefs should be averaged, bias should also be pooled
-  return(list(rmse_values = rmse_values, bias_per_imputation = bias_list))
+  bias_list <- lapply(coef_list, function(coefs) coefs[2:5] - true_coefs[2:5])
+  return(list(rmse_values = mean(rmse_values), bias = rowMeans(do.call(cbind, bias_list)), confidence_interval_coverage = rowMeans(do.call(cbind, ci_check))))
 }
-
-
-imputed_list =  do_multiple_imputation(missing_datasets[[1]])
-
-confidence_intervals <- confint(models[[1]])
-#models is a models list and the func is not gonna work on a list 
-
-confidence_int_bounds <- confidence_intervals[, c("2.5 %", "97.5 %")] 
-ci_check <- confidence_int_bounds[-1, 1] < true_coefs & confidence_int_bounds[-1, 2] > true_coefs
-print(ci_check)
-
-
-
-
 
