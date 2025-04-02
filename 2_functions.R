@@ -2,6 +2,7 @@
 
 library(mice)
 library(torch)
+library(MASS)
 
 # --- Imputation Functions ---
 
@@ -151,5 +152,26 @@ evaluate_vae_imputation <- function(imputed_list, true_coefs) {
   })
   bias_list <- lapply(coef_list, function(coefs) coefs[2:5] - true_coefs[2:5])
   return(list(rmse_values = mean(rmse_values), bias = rowMeans(do.call(cbind, bias_list)), confidence_interval_coverage = rowMeans(do.call(cbind, ci_check))))
+}
+
+# Function to generate data
+generate_data <- function(rho = .5, p = 49, n = 500){
+  # Create correlation matrix
+  Sigma <- matrix(rho, nrow = p, ncol = p)
+  diag(Sigma) <- 1
+  
+  # Generate multivariate normal predictors
+  mu <- rep(0, p)
+  data <- mvrnorm(n = n, mu = mu, Sigma = Sigma)
+  df <- as.data.frame(data)
+  
+  # Generate outcome variable
+  df$y <- as.numeric(as.matrix(df) %*% c(rep(0.2, 4), rep(0, p - 4)) + rnorm(n, 0, 1))
+  return(df)
+}
+
+# Function to create missing data
+create_missing_data <- function(data, prop, mech) {
+  ampute(data, prop = prop, mech = mech)$amp
 }
 
