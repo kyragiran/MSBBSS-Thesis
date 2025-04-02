@@ -144,7 +144,6 @@ evaluate_multiple_imputation <- function(imputed_list, true_coefs) {
     select(term, m, true, estimate, std.error, statistic, p.value, 
            riv, `2.5 %`, `97.5 %`, cov, bias) %>% 
     column_to_rownames("term")
-  browser()
   # pooled_summary <- summary(pooled, conf.int = TRUE)
   # pooled_est <- pooled_summary$estimate[2:5]
   # lower <- pooled_summary$`2.5 %`[2:5]
