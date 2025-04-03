@@ -21,7 +21,7 @@ df <- as.data.frame(data)
 # Generate outcome variable
 df$y <- as.numeric(as.matrix(df) %*% c(rep(0.2, 4), rep(0, p - 4)) + rnorm(n, 0, 1))
 
-# Function to create missing data
+# Function to create missing data (kept for flexibility)
 create_missing_data <- function(data, prop, mech) {
   ampute(data, prop = prop, mech = mech)$amp
 }
@@ -35,5 +35,6 @@ for (prop in missing_props) {
   missing_datasets[[paste0("MAR_", prop * 100, "%")]] <- create_missing_data(df, prop, "MAR")
 }
 
+# Save full data and missing scenarios
+saveRDS(df, "original_data.RDS")
 saveRDS(missing_datasets, "missing_datasets.RDS")
-
