@@ -1,0 +1,247 @@
+---
+title: "VAE Simulation in Futures"
+format: html
+---
+
+# Load required packages
+
+```{r}
+library(dplyr)
+library(magrittr)
+library(purrr)
+library(furrr)
+library(MASS)
+library(mice)
+library(torch)
+library(tibble)
+library(gnn)
+
+source("2_functions.R")
+```
+
+# Time logging
+```{r}
+st <- Sys.time()
+```
+
+## Simulation parameters
+```{r}
+# Fixed over simulations
+p <- 49 # number of predictors
+n <- 500 # number of observations
+nsim <- 100 # number of simulations
+rho <- 0.5 # correlation between the predictors
+
+set.seed(123) # reproducibility of the block
+
+# True coefs used in evaluations of the VAE
+true_coefs <- c("(Intercept)" = 0, V1 = 0.2, V2 = 0.2, V3 = 0.2, V4 = 0.2)
+
+# create missing data patterns
+miss.patterns <- replicate(15, sample(c(0, 1), 50, replace = TRUE)) %>% t() 
+```
+
+# Generate complete data
+```{r datagen, cache=TRUE}
+# Create a covariance matrix
+sigma <- matrix(rho, nrow = 49, ncol = 49)
+diag(sigma) <- 1 # correct the diagonal to 1
+
+# Generate multivariate normal predictors
+mu <- rep(0, 49) # vector of predictor means
+simdata <- replicate(n = nsim, 
+            expr = mvtnorm::rmvnorm(n = n, 
+                                    mean = mu, 
+                                    sigma = sigma) %>% 
+              `colnames<-`(paste("V", 1:49, sep = "")) %>% # name columns
+              as_tibble() %>% # make into a tibble
+              mutate(y = 0.2 * V1 + 0.2 * V2 + 0.2 * V3 + 0.2 * V4 + rnorm(n)), # add outcome y
+            simplify = FALSE) # keep as list of generated sets
+```
+
+# Inspect the model parameters
+For the first simulated set:
+```{r}
+simdata[[1]] %$% # for the first simulated set in simdata
+  lm(y ~ V1 + V2 + V3 + V4) %>% # fit linear model
+  summary() 
+```
+
+For all simulated sets:
+```{r}
+simdata %>% 
+  map(~.x %$% # for every simulated set in simdata....
+        lm(y ~ V1 + V2 + V3 + V4) %>% # fit linear model
+        coefficients) %>% # extract coefficients
+  Reduce("+", .) / length(simdata) # add all and divide by length (= average)
+```
+
+# Start multisession `future`
+```{r}
+plan(multisession)
+```
+
+# MCAR 
+We take the `r nsim` datasets in the list `simdata` and generate missing data in each of them. We will use the `mice` package's function `ampute()` to generate the missing data. 
+
+## MCAR 10% missing
+```{r MCAR10, cache=TRUE}
+mbased_MCAR_10 <- 
+  simdata %>%
+  furrr::future_map(function(x) {
+    x %>% 
+      ampute(prop = .1, # Amputation step
+             patterns = miss.patterns, # use the patterns
+             mech = "MCAR") %>% .$amp %>% 
+      train_vae_and_impute(m = 5) # VAE imputation step
+  }, .options = furrr_options(seed = 123))
+```
+
+### Evaluate MCAR 10% 
+```{r}
+# Evaluation function
+evaluate_vae_imputation <- function(imputed_list, true_coefs) {
+  models <- lapply(imputed_list, function(data) lm(y ~ V1 + V2 + V3 + V4, data = data))
+  est_list <- lapply(models, coef)
+  ci_list <- lapply(models, confint)
+  se_list <- lapply(models, function(mod) summary(mod)$coefficients[, "Std. Error"])
+  bias_list <- lapply(est_list, function(est) est - true_coefs[names(est)])
+  coverage_list <- lapply(ci_list, function(ci) (ci[, 1] < true_coefs[rownames(ci)]) & (ci[, 2] > true_coefs[rownames(ci)]))
+  rmse_list <- sapply(models, function(mod) {
+    preds <- predict(mod, newdata = imputed_list[[1]])
+    sqrt(mean((imputed_list[[1]]$y - preds)^2))
+  })
+  avg_estimate <- rowMeans(do.call(cbind, est_list))
+  avg_se <- rowMeans(do.call(cbind, se_list))
+  avg_bias <- rowMeans(do.call(cbind, bias_list))
+  avg_coverage <- rowMeans(do.call(cbind, coverage_list))
+  result <- data.frame(estimate = avg_estimate, std.error = avg_se, bias = avg_bias, coverage = avg_coverage, rmse = mean(rmse_list))
+  rownames(result) <- names(avg_estimate)
+  return(result)
+}
+```
+
+```{r}
+# just a single simulation evaluated, to check the function
+mbased_MCAR_10[[1]] %>% 
+  evaluate_vae_imputation(true_coefs = true_coefs)
+
+mbased_MCAR_10 %>% 
+  map(~.x %>% # for every simulated multiple imputation....
+        evaluate_vae_imputation(true_coefs = true_coefs)) %>% # `term` as rownames
+  Reduce("+", .) / nsim
+## BEWARE: ABOVE CODE puts the 5 imputed RMSE's in the rows!!!
+```
+
+## MCAR 25% missing
+```{r MCAR25, cache=TRUE}
+mbased_MCAR_25 <- 
+  simdata %>%
+  furrr::future_map(function(x) {
+    x %>% 
+      ampute(prop = .25, # Amputation step
+             patterns = miss.patterns, # use the patterns
+             mech = "MCAR") %>% .$amp %>% 
+      train_vae_and_impute(m = 5) # VAE imputation step
+  }, .options = furrr_options(seed = 123))
+```
+
+### Evaluate MCAR 25% 
+```{r}
+mbased_MCAR_25 %>% 
+  map(~.x %>% # for every simulated multiple imputation....
+        evaluate_vae_imputation(true_coefs = true_coefs)) %>% # `term` as rownames
+  Reduce("+", .) / nsim
+```
+
+## MCAR 50% missing
+```{r MCAR50, cache=TRUE}
+mbased_MCAR_50 <- 
+  simdata %>%
+  furrr::future_map(function(x) {
+    x %>% 
+      ampute(prop = .5, # Amputation step
+             patterns = miss.patterns, # use the patterns
+             mech = "MCAR") %>% .$amp %>% 
+      train_vae_and_impute(m = 5) # VAE imputation step
+  }, .options = furrr_options(seed = 123))
+```
+
+### Evaluate MCAR 50% 
+```{r}
+mbased_MCAR_50 %>% 
+  map(~.x %>% # for every simulated multiple imputation....
+        evaluate_vae_imputation(true_coefs = true_coefs)) %>% # `term` as rownames
+  Reduce("+", .) / nsim
+```
+
+# MAR 
+We take the `r nsim` datasets in the list `simdata` and generate missing data in each of them. We will use the `mice` package's function `ampute()` to generate the missing data. 
+
+## MAR 10% missing
+```{r MAR10, cache=TRUE}
+mbased_MAR_10 <- 
+  simdata %>%
+  furrr::future_map(function(x) {
+    x %>% 
+      ampute(prop = .1, # Amputation step
+             patterns = miss.patterns, # use the patterns
+             mech = "MAR") %>% .$amp %>% 
+      train_vae_and_impute(m = 5) # VAE imputation step
+  }, .options = furrr_options(seed = 123))
+```
+
+### Evaluate MAR 10% 
+```{r}
+mbased_MAR_10 %>% 
+  map(~.x %>% # for every simulated multiple imputation....
+        evaluate_vae_imputation(true_coefs = true_coefs)) %>% # `term` as rownames
+  Reduce("+", .) / nsim
+```
+
+## MAR 25% missing
+```{r MAR25, cache=TRUE}
+mbased_MAR_25 <- 
+  simdata %>%
+  furrr::future_map(function(x) {
+    x %>% 
+      ampute(prop = .25, # Amputation step
+             patterns = miss.patterns, # use the patterns
+             mech = "MAR") %>% .$amp %>% 
+      train_vae_and_impute(m = 5) # VAE imputation step
+  }, .options = furrr_options(seed = 123))
+```
+
+### Evaluate MAR 25% 
+```{r}
+mbased_MAR_25 %>% 
+  map(~.x %>% # for every simulated multiple imputation....
+        evaluate_vae_imputation(true_coefs = true_coefs)) %>% # `term` as rownames
+  Reduce("+", .) / nsim
+```
+
+## MAR 50% missing
+```{r MAR50, cache=TRUE}
+mbased_MAR_50 <- 
+  simdata %>%
+  furrr::future_map(function(x) {
+    x %>% 
+      ampute(prop = .5, # Amputation step
+             patterns = miss.patterns, # use the patterns
+             mech = "MAR") %>% .$amp %>% 
+      train_vae_and_impute(m = 5) # VAE imputation step
+  }, .options = furrr_options(seed = 123))
+```
+
+### Evaluate MAR 50% 
+```{r}
+mbased_MAR_50 %>% 
+  map(~.x %>% # for every simulated multiple imputation....
+        evaluate_vae_imputation(true_coefs = true_coefs)) %>% # `term` as rownames. 
+  Reduce("+", .) / nsim
+```
+
+# Runtime
+```{r}
+Sys.time() - st
+```
