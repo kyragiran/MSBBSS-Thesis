@@ -143,7 +143,7 @@ evaluate_multiple_imputation <- function(imputed_list, true_coefs) {
   return(result)
 }
 
-evaluate_vae_imputation <- function(imputed_list, true_coefs) {
+  evaluate_vae_imputation <- function(imputed_list, true_coefs) {
   models <- lapply(imputed_list, function(data) lm(y ~ V1 + V2 + V3 + V4, data = data))
   est_list <- lapply(models, coef)
   ci_list <- lapply(models, confint)
