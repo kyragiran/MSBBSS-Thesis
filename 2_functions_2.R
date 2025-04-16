@@ -120,43 +120,27 @@ evaluate_single_imputation <- function(imputed_data, true_coefs) {
   se <- mod_summary$coefficients[, "Std. Error"]
   ci <- confint(model)
   coverage <- (ci[, 1] < true_coefs[rownames(ci)]) & (ci[, 2] > true_coefs[rownames(ci)])
-  ci_width <- ci[, 2] - ci[, 1]
   rmse <- sqrt(mean((predict(model, newdata = imputed_data) - imputed_data$y)^2))
   bias <- est - true_coefs[names(est)]
-  result <- data.frame(estimate = est, std.error = se, bias = bias, coverage = coverage, ci.width = ci_width, rmse = rmse)
+  result <- data.frame(estimate = est, std.error = se, bias = bias, coverage = coverage, rmse = rmse)
   rownames(result) <- names(est)
   return(result)
 }
 
 evaluate_multiple_imputation <- function(imputed_list, true_coefs) {
-  terms <- names(true_coefs)
-  results <- lapply(imputed_list, function(data) {
-    model <- lm(y ~ V1 + V2 + V3 + V4, data = data)
-    summary_model <- summary(model)
-    list(est = coef(model), var = summary_model$coefficients[, "Std. Error"]^2)
-  })
-
-  pooled_results <- lapply(terms, function(term) {
-    ests <- sapply(results, function(x) x$est[term])
-    vars <- sapply(results, function(x) x$var[term])
-    pooled <- pool.scalar(Q = ests, U = vars)
-    ci_low <- pooled$qbar - qt(0.975, df = pooled$df) * sqrt(pooled$t)
-    ci_up <- pooled$qbar + qt(0.975, df = pooled$df) * sqrt(pooled$t)
-    ci_width <- ci_up - ci_low
-    data.frame(
-      estimate = pooled$qbar,
-      std.error = sqrt(pooled$t),
-      bias = pooled$qbar - true_coefs[term],
-      coverage = (ci_low < true_coefs[term]) & (ci_up > true_coefs[term]),
-      ci.width = ci_width,
-      within.var = pooled$ubar,
-      between.var = pooled$b,
-      total.var = pooled$t,
-      rmse = sqrt(mean((ests - true_coefs[term])^2)),
-      row.names = term
-    )
-  })
-  return(do.call(rbind, pooled_results))
+  models <- lapply(imputed_list, function(data) lm(y ~ V1 + V2 + V3 + V4, data = data))
+  pooled <- pool(models)
+  pooled_summary <- summary(pooled, conf.int = TRUE)
+  pooled_summary$bias <- pooled_summary$estimate - true_coefs[pooled_summary$term]
+  pooled_summary$coverage <- (pooled_summary$`2.5 %` < true_coefs[pooled_summary$term]) & (pooled_summary$`97.5 %` > true_coefs[pooled_summary$term])
+  pooled_summary$rmse <- mean(sapply(imputed_list, function(data) {
+    mod <- lm(y ~ V1 + V2 + V3 + V4, data = data)
+    sqrt(mean((predict(mod, newdata = data) - data$y)^2))
+  }))
+  result <- pooled_summary[, c("term", "estimate", "std.error", "bias", "coverage", "rmse")]
+  rownames(result) <- result$term
+  result$term <- NULL
+  return(result)
 }
 
 evaluate_vae_imputation <- function(imputed_list, true_coefs) {
