@@ -26,7 +26,7 @@ st <- Sys.time()
 # Fixed over simulations
 p <- 49 # number of predictors
 n <- 500 # number of observations
-nsim <- 100 # number of simulations
+nsim <- 1000 # number of simulations
 rho <- 0.5 # correlation between the predictors
 
 set.seed(123) # reproducibility of the block

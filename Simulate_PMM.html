@@ -170,7 +170,7 @@ Attaching package: 'mice'</code></pre>
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fixed over simulations</span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="dv">49</span> <span class="co"># number of predictors</span></span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">500</span> <span class="co"># number of observations</span></span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>nsim <span class="ot">&lt;-</span> <span class="dv">100</span> <span class="co"># number of simulations</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>nsim <span class="ot">&lt;-</span> <span class="dv">1000</span> <span class="co"># number of simulations</span></span>
 <span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>rho <span class="ot">&lt;-</span> <span class="fl">0.5</span> <span class="co"># correlation between the predictors</span></span>
 <span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>) <span class="co"># reproducibility of the block</span></span>
@@ -238,8 +238,8 @@ F-statistic: 65.79 on 4 and 495 DF,  p-value: &lt; 2.2e-16</code></pre>
 <span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>        coefficients) <span class="sc">%&gt;%</span> <span class="co"># extract coefficients</span></span>
 <span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> <span class="fu">length</span>(simdata) <span class="co"># add all and divide by length (= average)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>(Intercept)          V1          V2          V3          V4 
- 0.00275451  0.19845835  0.19350510  0.19989518  0.20521955 </code></pre>
+<pre><code> (Intercept)           V1           V2           V3           V4 
+0.0009457784 0.1987816855 0.1998217370 0.2008500938 0.2010056782 </code></pre>
 </div>
 </div>
 </section>
@@ -259,7 +259,7 @@ F-statistic: 65.79 on 4 and 495 DF,  p-value: &lt; 2.2e-16</code></pre>
 </section>
 <section id="mcar" class="level1">
 <h1>MCAR</h1>
-<p>We take the 100 datasets in the list <code>simdata</code> and generate missing data in each of them. We will use the <code>mice</code> package’s function <code>ampute()</code> to generate the missing data.</p>
+<p>We take the 1000 datasets in the list <code>simdata</code> and generate missing data in each of them. We will use the <code>mice</code> package’s function <code>ampute()</code> to generate the missing data.</p>
 <section id="mcar-10-missing" class="level2">
 <h2 class="anchored" data-anchor-id="mcar-10-missing">MCAR 10% missing</h2>
 <div class="cell">
@@ -322,18 +322,24 @@ V4          0.2777372  0.06582455 0.2777372  0.2 TRUE -0.02821913 0.9324799</cod
 <span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">evaluate_multiple</span>()) <span class="sc">%&gt;%</span> <span class="co"># `term` as rownames</span></span>
 <span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>               estimate  std.error  statistic       df    p.value       2.5 %
-(Intercept) 0.003377652 0.04616141 0.06948202 364.5895 0.50409108 -0.08743767
-V1          0.201536406 0.05931124 3.40962971 286.5166 0.01320491  0.08458064
-V2          0.192486209 0.05979712 3.24107288 271.6510 0.01787404  0.07451988
-V3          0.198351008 0.05947293 3.35439628 278.3939 0.01797463  0.08111155
-V4          0.201892112 0.05970078 3.38512152 283.2941 0.01193417  0.08411323
-                97.5 %    conf.low  conf.high true  cov         bias      rmse
-(Intercept) 0.09419298 -0.08743767 0.09419298  0.0 0.94  0.003377652 0.9957390
-V1          0.31849217  0.08458064 0.31849217  0.2 0.98  0.001536406 0.9966450
-V2          0.31045253  0.07451988 0.31045253  0.2 0.95 -0.007513791 0.9969486
-V3          0.31559047  0.08111155 0.31559047  0.2 0.93 -0.001648992 0.9950580
-V4          0.31967099  0.08411323 0.31967099  0.2 0.99  0.001892112 0.9953448</code></pre>
+<pre><code>                estimate  std.error   statistic       df    p.value       2.5 %
+(Intercept) 0.0004630055 0.04635634 0.009177444 353.4038 0.51125151 -0.09075416
+V1          0.1986117118 0.05968419 3.340493696 276.1931 0.01757784  0.08088537
+V2          0.1988012344 0.05966490 3.345345175 279.3643 0.01747106  0.08112465
+V3          0.2008590934 0.05959476 3.381556730 276.7040 0.01800381  0.08333747
+V4          0.2009595615 0.05988588 3.365363078 260.7277 0.01814214  0.08277454
+                97.5 %    conf.low  conf.high true   cov          bias
+(Intercept) 0.09168017 -0.09075416 0.09168017  0.0 0.947  0.0004630055
+V1          0.31633805  0.08088537 0.31633805  0.2 0.960 -0.0013882882
+V2          0.31647782  0.08112465 0.31647782  0.2 0.961 -0.0011987656
+V3          0.31838072  0.08333747 0.31838072  0.2 0.947  0.0008590934
+V4          0.31914458  0.08277454 0.31914458  0.2 0.960  0.0009595615
+                 rmse
+(Intercept) 0.9975160
+V1          0.9976346
+V2          0.9976271
+V3          0.9975946
+V4          0.9978493</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="do">## BEWARE: ABOVE CODE puts the 5 imputed RMSE's in the rows!!!</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -363,18 +369,24 @@ V4          0.31967099  0.08411323 0.31967099  0.2 0.99  0.001892112 0.9953448</
 <span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">evaluate_multiple</span>()) <span class="sc">%&gt;%</span> <span class="co"># `term` as rownames</span></span>
 <span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>               estimate  std.error  statistic       df    p.value       2.5 %
-(Intercept) 0.002292842 0.04836417 0.04429507 212.8110 0.47919434 -0.09343821
-V1          0.202987948 0.06405826 3.19417154 127.9903 0.02267609  0.07456650
-V2          0.195676518 0.06390825 3.07425963 119.0513 0.02546752  0.06801066
-V3          0.201297891 0.06388311 3.20263100 135.9738 0.02793746  0.07358118
-V4          0.194124309 0.06581211 2.96264048 105.3751 0.03349335  0.06137802
-                97.5 %    conf.low  conf.high true  cov         bias      rmse
-(Intercept) 0.09802389 -0.09343821 0.09802389  0.0 0.94  0.002292842 0.9990815
-V1          0.33140940  0.07456650 0.33140940  0.2 0.94  0.002987948 1.0000489
-V2          0.32334238  0.06801066 0.32334238  0.2 0.97 -0.004323482 0.9967722
-V3          0.32901460  0.07358118 0.32901460  0.2 0.95  0.001297891 0.9972583
-V4          0.32687060  0.06137802 0.32687060  0.2 0.98 -0.005875691 0.9999004</code></pre>
+<pre><code>                estimate  std.error   statistic       df    p.value       2.5 %
+(Intercept) 0.0004189907 0.04840331 0.008691293 211.9205 0.50958079 -0.09535644
+V1          0.1985019797 0.06407488 3.125943774 133.5357 0.03025669  0.07021897
+V2          0.1985333080 0.06440347 3.106403421 125.7857 0.02880310  0.06950499
+V3          0.2021970559 0.06378774 3.190206822 133.7382 0.02715083  0.07470774
+V4          0.1977813874 0.06528013 3.057952597 108.6282 0.03408065  0.06645270
+                97.5 %    conf.low  conf.high true   cov          bias
+(Intercept) 0.09619442 -0.09535644 0.09619442  0.0 0.945  0.0004189907
+V1          0.32678499  0.07021897 0.32678499  0.2 0.965 -0.0014980203
+V2          0.32756162  0.06950499 0.32756162  0.2 0.961 -0.0014666920
+V3          0.32968637  0.07470774 0.32968637  0.2 0.948  0.0021970559
+V4          0.32911008  0.06645270 0.32911008  0.2 0.956 -0.0022186126
+                 rmse
+(Intercept) 1.0005256
+V1          1.0003778
+V2          0.9998111
+V3          0.9992437
+V4          1.0005825</code></pre>
 </div>
 </div>
 </section>
@@ -403,18 +415,18 @@ V4          0.32687060  0.06137802 0.32687060  0.2 0.98 -0.005875691 0.9999004</
 <span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">evaluate_multiple</span>()) <span class="sc">%&gt;%</span> <span class="co"># `term` as rownames</span></span>
 <span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>               estimate  std.error  statistic       df    p.value       2.5 %
-(Intercept) 0.003842796 0.05289771 0.06634995 98.17063 0.48876928 -0.10279761
-V1          0.195935123 0.07281576 2.77896989 59.77361 0.08126181  0.04422304
-V2          0.200778578 0.07399204 2.80697425 48.54607 0.05659856  0.04628376
-V3          0.200031556 0.07416067 2.75081672 43.16749 0.05043753  0.04535918
-V4          0.193918113 0.07571454 2.63032688 43.37954 0.08209034  0.03432774
-               97.5 %    conf.low conf.high true  cov          bias     rmse
-(Intercept) 0.1104832 -0.10279761 0.1104832  0.0 0.93  3.842796e-03 1.008093
-V1          0.3476472  0.04422304 0.3476472  0.2 0.91 -4.064877e-03 1.008642
-V2          0.3552734  0.04628376 0.3552734  0.2 0.95  7.785779e-04 1.009741
-V3          0.3547039  0.04535918 0.3547039  0.2 0.99  3.155633e-05 1.008521
-V4          0.3535085  0.03432774 0.3535085  0.2 0.96 -6.081887e-03 1.006582</code></pre>
+<pre><code>                estimate  std.error   statistic       df    p.value       2.5 %
+(Intercept) 5.479464e-05 0.05303679 0.001084877 98.67815 0.51849176 -0.10699750
+V1          1.955304e-01 0.07356857 2.726464929 52.16218 0.06984555  0.04199272
+V2          1.993264e-01 0.07415732 2.754869453 45.81010 0.06246534  0.04419744
+V3          2.048623e-01 0.07169156 2.906973488 57.79761 0.04654700  0.05657161
+V4          1.952201e-01 0.07610542 2.638868780 41.93010 0.07820800  0.03445596
+               97.5 %    conf.low conf.high true   cov          bias     rmse
+(Intercept) 0.1071071 -0.10699750 0.1071071  0.0 0.950  5.479464e-05 1.007014
+V1          0.3490681  0.04199272 0.3490681  0.2 0.948 -4.469607e-03 1.006254
+V2          0.3544554  0.04419744 0.3544554  0.2 0.950 -6.735875e-04 1.005834
+V3          0.3531529  0.05657161 0.3531529  0.2 0.961  4.862253e-03 1.006690
+V4          0.3559843  0.03445596 0.3559843  0.2 0.951 -4.779884e-03 1.007216</code></pre>
 </div>
 </div>
 </section>
@@ -422,7 +434,7 @@ V4          0.3535085  0.03432774 0.3535085  0.2 0.96 -6.081887e-03 1.006582</co
 </section>
 <section id="mar" class="level1">
 <h1>MAR</h1>
-<p>We take the 100 datasets in the list <code>simdata</code> and generate missing data in each of them. We will use the <code>mice</code> package’s function <code>ampute()</code> to generate the missing data.</p>
+<p>We take the 1000 datasets in the list <code>simdata</code> and generate missing data in each of them. We will use the <code>mice</code> package’s function <code>ampute()</code> to generate the missing data.</p>
 <section id="mar-10-missing" class="level2">
 <h2 class="anchored" data-anchor-id="mar-10-missing">MAR 10% missing</h2>
 <div class="cell">
@@ -447,18 +459,24 @@ V4          0.3535085  0.03432774 0.3535085  0.2 0.96 -6.081887e-03 1.006582</co
 <span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">evaluate_multiple</span>()) <span class="sc">%&gt;%</span> <span class="co"># `term` as rownames</span></span>
 <span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>               estimate  std.error  statistic       df    p.value       2.5 %
-(Intercept) 0.002540104 0.04629151 0.05438245 351.3089 0.52213924 -0.08855334
-V1          0.196938196 0.05917982 3.33675896 294.7381 0.01273149  0.08026230
-V2          0.194212428 0.06030011 3.23923236 249.8718 0.01316542  0.07511836
-V3          0.200140080 0.05939328 3.38684420 276.9996 0.01285266  0.08302612
-V4          0.204836169 0.06026801 3.41045327 254.7162 0.01092498  0.08571731
-                97.5 %    conf.low  conf.high true  cov          bias      rmse
-(Intercept) 0.09363355 -0.08855334 0.09363355  0.0 0.94  0.0025401036 0.9956214
-V1          0.31361409  0.08026230 0.31361409  0.2 0.97 -0.0030618043 0.9966436
-V2          0.31330650  0.07511836 0.31330650  0.2 0.97 -0.0057875716 0.9953786
-V3          0.31725405  0.08302612 0.31725405  0.2 0.96  0.0001400803 0.9970555
-V4          0.32395503  0.08571731 0.32395503  0.2 0.98  0.0048361687 0.9950778</code></pre>
+<pre><code>                estimate  std.error  statistic       df    p.value       2.5 %
+(Intercept) 0.0007830626 0.04636099 0.01717358 355.1427 0.51246946 -0.09044672
+V1          0.1981394623 0.05975352 3.32643467 275.5397 0.01834323  0.08026416
+V2          0.2000531022 0.05976713 3.35852612 273.2350 0.01765697  0.08216029
+V3          0.2012464576 0.05959431 3.38427613 280.6431 0.01616929  0.08370943
+V4          0.1997231609 0.05998308 3.34387544 257.9125 0.02244050  0.08131779
+                97.5 %    conf.low  conf.high true   cov          bias
+(Intercept) 0.09201285 -0.09044672 0.09201285  0.0 0.955  7.830626e-04
+V1          0.31601476  0.08026416 0.31601476  0.2 0.950 -1.860538e-03
+V2          0.31794592  0.08216029 0.31794592  0.2 0.949  5.310223e-05
+V3          0.31878348  0.08370943 0.31878348  0.2 0.952  1.246458e-03
+V4          0.31812853  0.08131779 0.31812853  0.2 0.953 -2.768391e-04
+                 rmse
+(Intercept) 0.9978334
+V1          0.9978698
+V2          0.9974762
+V3          0.9980961
+V4          0.9976114</code></pre>
 </div>
 </div>
 </section>
@@ -488,17 +506,17 @@ V4          0.32395503  0.08571731 0.32395503  0.2 0.98  0.0048361687 0.9950778<
 <span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>               estimate  std.error  statistic       df    p.value       2.5 %
-(Intercept) 0.004123579 0.04796793 0.08298465 227.4580 0.49807101 -0.09065334
-V1          0.198443690 0.06331172 3.16032271 151.8030 0.02158209  0.07195909
-V2          0.195283615 0.06415020 3.07931498 128.1346 0.02268516  0.06687456
-V3          0.200235047 0.06372618 3.18221635 136.4531 0.02336462  0.07280923
-V4          0.203467199 0.06610081 3.11028187 105.9720 0.02813840  0.07001617
-               97.5 %    conf.low conf.high true  cov          bias      rmse
-(Intercept) 0.0989005 -0.09065334 0.0989005  0.0 0.93  0.0041235794 0.9993480
-V1          0.3249283  0.07195909 0.3249283  0.2 0.96 -0.0015563099 0.9996021
-V2          0.3236927  0.06687456 0.3236927  0.2 0.97 -0.0047163852 0.9980268
-V3          0.3276609  0.07280923 0.3276609  0.2 0.98  0.0002350467 0.9975240
-V4          0.3369182  0.07001617 0.3369182  0.2 0.96  0.0034671993 1.0002446</code></pre>
+(Intercept) 0.001054524 0.04858246 0.02076058 204.5394 0.50476191 -0.09512844
+V1          0.198155669 0.06435227 3.10764633 126.3118 0.02960074  0.06928476
+V2          0.198631681 0.06457310 3.10250451 120.8601 0.02978536  0.06920251
+V3          0.202113787 0.06371769 3.19685903 139.5747 0.02583112  0.07476300
+V4          0.199650444 0.06538380 3.07792436 113.1683 0.03167710  0.06808588
+                97.5 %    conf.low  conf.high true   cov          bias     rmse
+(Intercept) 0.09723749 -0.09512844 0.09723749  0.0 0.953  0.0010545241 1.000552
+V1          0.32702657  0.06928476 0.32702657  0.2 0.957 -0.0018443315 1.000870
+V2          0.32806085  0.06920251 0.32806085  0.2 0.954 -0.0013683190 1.000803
+V3          0.32946457  0.07476300 0.32946457  0.2 0.958  0.0021137874 1.001239
+V4          0.33121500  0.06808588 0.33121500  0.2 0.949 -0.0003495561 1.000701</code></pre>
 </div>
 </div>
 </section>
@@ -527,18 +545,18 @@ V4          0.3369182  0.07001617 0.3369182  0.2 0.96  0.0034671993 1.0002446</c
 <span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">evaluate_multiple</span>()) <span class="sc">%&gt;%</span> <span class="co"># `term` as rownames</span></span>
 <span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>               estimate  std.error statistic       df    p.value       2.5 %
-(Intercept) 0.007290614 0.05376225 0.1329095 81.39253 0.53371702 -0.10163587
-V1          0.198869222 0.07411753 2.7461337 40.48685 0.05541508  0.04389506
-V2          0.200642442 0.07497602 2.7414608 43.03956 0.05351133  0.04358002
-V3          0.196172483 0.07326509 2.7240136 42.50006 0.06089796  0.04343602
-V4          0.204744070 0.07679700 2.7430713 33.60842 0.08063747  0.04228634
-               97.5 %    conf.low conf.high true  cov          bias     rmse
-(Intercept) 0.1162171 -0.10163587 0.1162171  0.0 0.94  0.0072906141 1.003344
-V1          0.3538434  0.04389506 0.3538434  0.2 0.94 -0.0011307778 1.004225
-V2          0.3577049  0.04358002 0.3577049  0.2 0.99  0.0006424416 1.007471
-V3          0.3489089  0.04343602 0.3489089  0.2 0.96 -0.0038275173 1.000324
-V4          0.3672018  0.04228634 0.3672018  0.2 0.92  0.0047440696 1.003976</code></pre>
+<pre><code>               estimate  std.error  statistic       df    p.value       2.5 %
+(Intercept) 0.002410319 0.05342210 0.04275691 92.36380 0.51297522 -0.10559945
+V1          0.200266592 0.07381523 2.76815779 49.78695 0.05857671  0.04621646
+V2          0.199781649 0.07455179 2.74385940 49.66477 0.05824204  0.04355299
+V3          0.201245817 0.07306886 2.80601857 53.24752 0.05708672  0.04915399
+V4          0.195729907 0.07607004 2.63583733 44.06591 0.08008136  0.03517396
+               97.5 %    conf.low conf.high true   cov          bias     rmse
+(Intercept) 0.1104201 -0.10559945 0.1104201  0.0 0.949  0.0024103194 1.006891
+V1          0.3543167  0.04621646 0.3543167  0.2 0.947  0.0002665918 1.007086
+V2          0.3560103  0.04355299 0.3560103  0.2 0.954 -0.0002183514 1.007646
+V3          0.3533376  0.04915399 0.3533376  0.2 0.954  0.0012458169 1.005943
+V4          0.3562859  0.03517396 0.3562859  0.2 0.949 -0.0042700929 1.007161</code></pre>
 </div>
 </div>
 </section>
@@ -549,7 +567,7 @@ V4          0.3672018  0.04228634 0.3672018  0.2 0.92  0.0047440696 1.003976</co
 <div class="cell">
 <div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Sys.time</span>() <span class="sc">-</span> st</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Time difference of 9.604964 mins</code></pre>
+<pre><code>Time difference of 2.508098 hours</code></pre>
 </div>
 </div>
 </section>
