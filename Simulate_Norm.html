@@ -170,7 +170,7 @@ Attaching package: 'mice'</code></pre>
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fixed over simulations</span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="dv">49</span> <span class="co"># number of predictors</span></span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">500</span> <span class="co"># number of observations</span></span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>nsim <span class="ot">&lt;-</span> <span class="dv">100</span> <span class="co"># number of simulations</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>nsim <span class="ot">&lt;-</span> <span class="dv">1000</span> <span class="co"># number of simulations</span></span>
 <span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>rho <span class="ot">&lt;-</span> <span class="fl">0.5</span> <span class="co"># correlation between the predictors</span></span>
 <span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>) <span class="co"># reproducibility of the block</span></span>
@@ -238,8 +238,8 @@ F-statistic: 65.79 on 4 and 495 DF,  p-value: &lt; 2.2e-16</code></pre>
 <span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>        coefficients) <span class="sc">%&gt;%</span> <span class="co"># extract coefficients</span></span>
 <span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> <span class="fu">length</span>(simdata) <span class="co"># add all and divide by length (= average)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>(Intercept)          V1          V2          V3          V4 
- 0.00275451  0.19845835  0.19350510  0.19989518  0.20521955 </code></pre>
+<pre><code> (Intercept)           V1           V2           V3           V4 
+0.0009457784 0.1987816855 0.1998217370 0.2008500938 0.2010056782 </code></pre>
 </div>
 </div>
 </section>
@@ -259,7 +259,7 @@ F-statistic: 65.79 on 4 and 495 DF,  p-value: &lt; 2.2e-16</code></pre>
 </section>
 <section id="mcar" class="level1">
 <h1>MCAR</h1>
-<p>We take the 100 datasets in the list <code>simdata</code> and generate missing data in each of them. We will use the <code>mice</code> package’s function <code>ampute()</code> to generate the missing data.</p>
+<p>We take the 1000 datasets in the list <code>simdata</code> and generate missing data in each of them. We will use the <code>mice</code> package’s function <code>ampute()</code> to generate the missing data.</p>
 <section id="mcar-10-missing" class="level2">
 <h2 class="anchored" data-anchor-id="mcar-10-missing">MCAR 10% missing</h2>
 <div class="cell">
@@ -317,64 +317,73 @@ V2          0.2839573  0.07722542 0.2839573  0.2 TRUE -0.01940866 0.9544518
 V3          0.3849169  0.15785697 0.3849169  0.2 TRUE  0.07138694 0.9502242
 V4          0.2679702  0.04371374 0.2679702  0.2 TRUE -0.04415804 0.9558222</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>mbased_MCAR_10 <span class="sc">%&gt;%</span> </span>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>NORM_MCAR10 <span class="ot">&lt;-</span> mbased_MCAR_10 <span class="sc">%&gt;%</span> </span>
 <span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="sc">~</span>.x <span class="sc">%&gt;%</span> <span class="co"># for every simulated multiple imputation....</span></span>
 <span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">evaluate_multiple</span>()) <span class="sc">%&gt;%</span> <span class="co"># `term` as rownames</span></span>
-<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a><span class="do">## BEWARE: ABOVE CODE puts the 5 imputed RMSE's in the rows!!!</span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>NORM_MCAR10</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>              estimate  std.error  statistic       df    p.value       2.5 %
-(Intercept) 0.00277275 0.04639541 0.06068248 353.5749 0.50523152 -0.08852382
-V1          0.19983856 0.06021970 3.33396415 252.2478 0.01449012  0.08073790
-V2          0.19192756 0.06035799 3.19965618 236.9350 0.01858962  0.07270357
-V3          0.19916849 0.06010989 3.33246857 245.4910 0.01667375  0.08051802
-V4          0.20167569 0.06063169 3.32870060 224.5013 0.01308493  0.08176443
-                97.5 %    conf.low  conf.high true  cov          bias      rmse
-(Intercept) 0.09406932 -0.08852382 0.09406932  0.0 0.95  0.0027727502 1.0000093
-V1          0.31893921  0.08073790 0.31893921  0.2 0.97 -0.0001614442 0.9985142
-V2          0.31115155  0.07270357 0.31115155  0.2 0.96 -0.0080724394 0.9974401
-V3          0.31781897  0.08051802 0.31781897  0.2 0.95 -0.0008315053 0.9978834
-V4          0.32158694  0.08176443 0.32158694  0.2 0.98  0.0016756879 0.9990551</code></pre>
+<pre><code>                estimate  std.error  statistic       df    p.value       2.5 %
+(Intercept) 0.0007193716 0.04658531 0.01543279 342.0490 0.51203736 -0.09097039
+V1          0.1987713949 0.05994666 3.33089981 263.9053 0.01768076  0.08044026
+V2          0.1985804074 0.06015692 3.31378734 249.1093 0.01870513  0.07978309
+V3          0.2015057735 0.05991664 3.37189226 262.5413 0.01753808  0.08324159
+V4          0.2000026997 0.06036453 3.32546815 238.7155 0.01961391  0.08068503
+                97.5 %    conf.low  conf.high true   cov          bias
+(Intercept) 0.09240913 -0.09097039 0.09240913  0.0 0.952  7.193716e-04
+V1          0.31710253  0.08044026 0.31710253  0.2 0.970 -1.228605e-03
+V2          0.31737772  0.07978309 0.31737772  0.2 0.958 -1.419593e-03
+V3          0.31976996  0.08324159 0.31976996  0.2 0.947  1.505774e-03
+V4          0.31932037  0.08068503 0.31932037  0.2 0.960  2.699667e-06
+                 rmse
+(Intercept) 1.0001493
+V1          1.0006252
+V2          0.9997246
+V3          0.9999148
+V4          1.0004826</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="do">## BEWARE: ABOVE CODE puts the 5 imputed RMSE's in the rows!!!</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
 <section id="mcar-25-missing" class="level2">
 <h2 class="anchored" data-anchor-id="mcar-25-missing">MCAR 25% missing</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>mbased_MCAR_25 <span class="ot">&lt;-</span> </span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  simdata <span class="sc">%&gt;%</span></span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  furrr<span class="sc">::</span><span class="fu">future_map</span>(<span class="cf">function</span>(x) {</span>
-<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>    x <span class="sc">%&gt;%</span> </span>
-<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ampute</span>(<span class="at">prop =</span> .<span class="dv">25</span>, <span class="co"># Amputation step</span></span>
-<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">patterns =</span> miss.patterns, <span class="co"># use the patterns</span></span>
-<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">mech =</span> <span class="st">"MCAR"</span>) <span class="sc">%&gt;%</span> .<span class="sc">$</span>amp <span class="sc">%&gt;%</span> </span>
-<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mice</span>(<span class="at">m =</span> <span class="dv">5</span>, <span class="co"># Imputation step </span></span>
-<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>           <span class="at">maxit =</span> <span class="dv">5</span>,</span>
-<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>           <span class="at">method =</span> <span class="st">"norm"</span>,</span>
-<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>           <span class="at">print =</span> F)</span>
-<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>  }, <span class="at">.options =</span> <span class="fu">furrr_options</span>(<span class="at">seed =</span> <span class="dv">123</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>mbased_MCAR_25 <span class="ot">&lt;-</span> </span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  simdata <span class="sc">%&gt;%</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  furrr<span class="sc">::</span><span class="fu">future_map</span>(<span class="cf">function</span>(x) {</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    x <span class="sc">%&gt;%</span> </span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ampute</span>(<span class="at">prop =</span> .<span class="dv">25</span>, <span class="co"># Amputation step</span></span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">patterns =</span> miss.patterns, <span class="co"># use the patterns</span></span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">mech =</span> <span class="st">"MCAR"</span>) <span class="sc">%&gt;%</span> .<span class="sc">$</span>amp <span class="sc">%&gt;%</span> </span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mice</span>(<span class="at">m =</span> <span class="dv">5</span>, <span class="co"># Imputation step </span></span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>           <span class="at">maxit =</span> <span class="dv">5</span>,</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>           <span class="at">method =</span> <span class="st">"norm"</span>,</span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>           <span class="at">print =</span> F)</span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>  }, <span class="at">.options =</span> <span class="fu">furrr_options</span>(<span class="at">seed =</span> <span class="dv">123</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="evaluate-mcar-25" class="level3">
 <h3 class="anchored" data-anchor-id="evaluate-mcar-25">Evaluate MCAR 25%</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>mbased_MCAR_25 <span class="sc">%&gt;%</span> </span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="sc">~</span>.x <span class="sc">%&gt;%</span> <span class="co"># for every simulated multiple imputation....</span></span>
-<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">evaluate_multiple</span>()) <span class="sc">%&gt;%</span> <span class="co"># `term` as rownames</span></span>
-<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>NORM_MCAR25 <span class="ot">&lt;-</span> mbased_MCAR_25 <span class="sc">%&gt;%</span> </span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="sc">~</span>.x <span class="sc">%&gt;%</span> <span class="co"># for every simulated multiple imputation....</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">evaluate_multiple</span>()) <span class="sc">%&gt;%</span> <span class="co"># `term` as rownames</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>NORM_MCAR25</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>               estimate  std.error  statistic       df    p.value       2.5 %
-(Intercept) 0.002124992 0.04875606 0.04726599 205.2482 0.48551870 -0.09438519
-V1          0.201177004 0.06436585 3.14963890 108.6316 0.02408443  0.07202008
-V2          0.196866017 0.06576338 3.03300572 106.6280 0.03390118  0.06434458
-V3          0.200924944 0.06449031 3.15296597 114.5342 0.02348444  0.07174266
-V4          0.192567174 0.06554345 2.96876499 110.7566 0.03302745  0.06030716
-                97.5 %    conf.low  conf.high true  cov          bias     rmse
-(Intercept) 0.09863518 -0.09438519 0.09863518  0.0 0.92  0.0021249920 1.005783
-V1          0.33033393  0.07202008 0.33033393  0.2 0.94  0.0011770043 1.005569
-V2          0.32938745  0.06434458 0.32938745  0.2 0.96 -0.0031339831 1.005356
-V3          0.33010722  0.07174266 0.33010722  0.2 0.95  0.0009249437 1.004701
-V4          0.32482719  0.06030716 0.32482719  0.2 0.97 -0.0074328260 1.007052</code></pre>
+<pre><code>                estimate  std.error  statistic       df    p.value       2.5 %
+(Intercept) 0.0007561877 0.04911217 0.01563593 192.3336 0.51082594 -0.09654215
+V1          0.1985903159 0.06498875 3.08559516 112.5763 0.03162554  0.06806261
+V2          0.1977144273 0.06529895 3.05595259 110.4303 0.03301410  0.06636985
+V3          0.2024672488 0.06457252 3.16154113 116.3513 0.02715779  0.07299704
+V4          0.1972135012 0.06593208 3.02564663 101.4664 0.03494318  0.06408237
+                97.5 %    conf.low  conf.high true   cov          bias     rmse
+(Intercept) 0.09805453 -0.09654215 0.09805453  0.0 0.945  0.0007561877 1.007398
+V1          0.32911802  0.06806261 0.32911802  0.2 0.959 -0.0014096841 1.006733
+V2          0.32905901  0.06636985 0.32905901  0.2 0.955 -0.0022855727 1.007854
+V3          0.33193746  0.07299704 0.33193746  0.2 0.951  0.0024672488 1.007433
+V4          0.33034463  0.06408237 0.33034463  0.2 0.964 -0.0027864988 1.007693</code></pre>
 </div>
 </div>
 </section>
@@ -382,39 +391,40 @@ V4          0.32482719  0.06030716 0.32482719  0.2 0.97 -0.0074328260 1.007052</
 <section id="mcar-50-missing" class="level2">
 <h2 class="anchored" data-anchor-id="mcar-50-missing">MCAR 50% missing</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>mbased_MCAR_50 <span class="ot">&lt;-</span> </span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  simdata <span class="sc">%&gt;%</span></span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  furrr<span class="sc">::</span><span class="fu">future_map</span>(<span class="cf">function</span>(x) {</span>
-<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>    x <span class="sc">%&gt;%</span> </span>
-<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ampute</span>(<span class="at">prop =</span> .<span class="dv">5</span>, <span class="co"># Amputation step</span></span>
-<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">patterns =</span> miss.patterns, <span class="co"># use the patterns</span></span>
-<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">mech =</span> <span class="st">"MCAR"</span>) <span class="sc">%&gt;%</span> .<span class="sc">$</span>amp <span class="sc">%&gt;%</span> </span>
-<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mice</span>(<span class="at">m =</span> <span class="dv">5</span>, <span class="co"># Imputation step </span></span>
-<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>           <span class="at">maxit =</span> <span class="dv">5</span>,</span>
-<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>           <span class="at">method =</span> <span class="st">"norm"</span>,</span>
-<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>           <span class="at">print =</span> F)</span>
-<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>  }, <span class="at">.options =</span> <span class="fu">furrr_options</span>(<span class="at">seed =</span> <span class="dv">123</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>mbased_MCAR_50 <span class="ot">&lt;-</span> </span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  simdata <span class="sc">%&gt;%</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  furrr<span class="sc">::</span><span class="fu">future_map</span>(<span class="cf">function</span>(x) {</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>    x <span class="sc">%&gt;%</span> </span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ampute</span>(<span class="at">prop =</span> .<span class="dv">5</span>, <span class="co"># Amputation step</span></span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">patterns =</span> miss.patterns, <span class="co"># use the patterns</span></span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">mech =</span> <span class="st">"MCAR"</span>) <span class="sc">%&gt;%</span> .<span class="sc">$</span>amp <span class="sc">%&gt;%</span> </span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mice</span>(<span class="at">m =</span> <span class="dv">5</span>, <span class="co"># Imputation step </span></span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>           <span class="at">maxit =</span> <span class="dv">5</span>,</span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>           <span class="at">method =</span> <span class="st">"norm"</span>,</span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>           <span class="at">print =</span> F)</span>
+<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a>  }, <span class="at">.options =</span> <span class="fu">furrr_options</span>(<span class="at">seed =</span> <span class="dv">123</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="evaluate-mcar-50" class="level3">
 <h3 class="anchored" data-anchor-id="evaluate-mcar-50">Evaluate MCAR 50%</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>mbased_MCAR_50 <span class="sc">%&gt;%</span> </span>
-<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="sc">~</span>.x <span class="sc">%&gt;%</span> <span class="co"># for every simulated multiple imputation....</span></span>
-<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">evaluate_multiple</span>()) <span class="sc">%&gt;%</span> <span class="co"># `term` as rownames</span></span>
-<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>NORM_MCAR50 <span class="ot">&lt;-</span> mbased_MCAR_50 <span class="sc">%&gt;%</span> </span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="sc">~</span>.x <span class="sc">%&gt;%</span> <span class="co"># for every simulated multiple imputation....</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">evaluate_multiple</span>()) <span class="sc">%&gt;%</span> <span class="co"># `term` as rownames</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>NORM_MCAR50</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>               estimate  std.error  statistic       df    p.value       2.5 %
-(Intercept) 0.002098736 0.05378501 0.04237812 96.16911 0.49687038 -0.10646913
-V1          0.200464001 0.07615771 2.68821209 40.52798 0.06453826  0.03949842
-V2          0.199293926 0.07345809 2.78655639 49.27048 0.05389606  0.04589971
-V3          0.200352330 0.07402865 2.76975602 53.52765 0.05086939  0.04573727
-V4          0.187860478 0.07880016 2.45540142 33.76505 0.08769704  0.01897244
-               97.5 %    conf.low conf.high true  cov          bias     rmse
-(Intercept) 0.1106666 -0.10646913 0.1106666  0.0 0.97  0.0020987357 1.020890
-V1          0.3614296  0.03949842 0.3614296  0.2 0.98  0.0004640013 1.020458
-V2          0.3526881  0.04589971 0.3526881  0.2 0.97 -0.0007060739 1.022135
-V3          0.3549674  0.04573727 0.3549674  0.2 0.98  0.0003523303 1.020380
-V4          0.3567485  0.01897244 0.3567485  0.2 0.95 -0.0121395218 1.020615</code></pre>
+<pre><code>                estimate  std.error  statistic       df    p.value       2.5 %
+(Intercept) 0.0007393128 0.05430928 0.01830257 93.81074 0.52070315 -0.10911200
+V1          0.1944767717 0.07526023 2.65153794 45.11680 0.07240552  0.03622363
+V2          0.1986501518 0.07570597 2.68854069 45.21598 0.06443856  0.03893965
+V3          0.2048118009 0.07433435 2.82648107 52.16050 0.05305662  0.04912788
+V4          0.1918298018 0.07805828 2.52976826 35.32904 0.08525180  0.02523312
+               97.5 %    conf.low conf.high true   cov          bias     rmse
+(Intercept) 0.1105906 -0.10911200 0.1105906  0.0 0.954  0.0007393128 1.023330
+V1          0.3527299  0.03622363 0.3527299  0.2 0.958 -0.0055232283 1.022921
+V2          0.3583607  0.03893965 0.3583607  0.2 0.964 -0.0013498482 1.023204
+V3          0.3604957  0.04912788 0.3604957  0.2 0.962  0.0048118009 1.022837
+V4          0.3584265  0.02523312 0.3584265  0.2 0.959 -0.0081701982 1.023278</code></pre>
 </div>
 </div>
 </section>
@@ -422,43 +432,44 @@ V4          0.3567485  0.01897244 0.3567485  0.2 0.95 -0.0121395218 1.020615</co
 </section>
 <section id="mar" class="level1">
 <h1>MAR</h1>
-<p>We take the 100 datasets in the list <code>simdata</code> and generate missing data in each of them. We will use the <code>mice</code> package’s function <code>ampute()</code> to generate the missing data.</p>
+<p>We take the 1000 datasets in the list <code>simdata</code> and generate missing data in each of them. We will use the <code>mice</code> package’s function <code>ampute()</code> to generate the missing data.</p>
 <section id="mar-10-missing" class="level2">
 <h2 class="anchored" data-anchor-id="mar-10-missing">MAR 10% missing</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>mbased_MAR_10 <span class="ot">&lt;-</span> </span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  simdata <span class="sc">%&gt;%</span></span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  furrr<span class="sc">::</span><span class="fu">future_map</span>(<span class="cf">function</span>(x) {</span>
-<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>    x <span class="sc">%&gt;%</span> </span>
-<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ampute</span>(<span class="at">prop =</span> .<span class="dv">1</span>, <span class="co"># Amputation step</span></span>
-<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">patterns =</span> miss.patterns, <span class="co"># use the patterns</span></span>
-<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">mech =</span> <span class="st">"MAR"</span>) <span class="sc">%&gt;%</span> .<span class="sc">$</span>amp <span class="sc">%&gt;%</span> </span>
-<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mice</span>(<span class="at">m =</span> <span class="dv">5</span>, <span class="co"># Imputation step </span></span>
-<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>           <span class="at">maxit =</span> <span class="dv">5</span>,</span>
-<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>           <span class="at">method =</span> <span class="st">"norm"</span>,</span>
-<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>           <span class="at">print =</span> F)</span>
-<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>  }, <span class="at">.options =</span> <span class="fu">furrr_options</span>(<span class="at">seed =</span> <span class="dv">123</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>mbased_MAR_10 <span class="ot">&lt;-</span> </span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  simdata <span class="sc">%&gt;%</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>  furrr<span class="sc">::</span><span class="fu">future_map</span>(<span class="cf">function</span>(x) {</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>    x <span class="sc">%&gt;%</span> </span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ampute</span>(<span class="at">prop =</span> .<span class="dv">1</span>, <span class="co"># Amputation step</span></span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">patterns =</span> miss.patterns, <span class="co"># use the patterns</span></span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">mech =</span> <span class="st">"MAR"</span>) <span class="sc">%&gt;%</span> .<span class="sc">$</span>amp <span class="sc">%&gt;%</span> </span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mice</span>(<span class="at">m =</span> <span class="dv">5</span>, <span class="co"># Imputation step </span></span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>           <span class="at">maxit =</span> <span class="dv">5</span>,</span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>           <span class="at">method =</span> <span class="st">"norm"</span>,</span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a>           <span class="at">print =</span> F)</span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a>  }, <span class="at">.options =</span> <span class="fu">furrr_options</span>(<span class="at">seed =</span> <span class="dv">123</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="evaluate-mar-10" class="level3">
 <h3 class="anchored" data-anchor-id="evaluate-mar-10">Evaluate MAR 10%</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>mbased_MAR_10 <span class="sc">%&gt;%</span> </span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="sc">~</span>.x <span class="sc">%&gt;%</span> <span class="co"># for every simulated multiple imputation....</span></span>
-<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">evaluate_multiple</span>()) <span class="sc">%&gt;%</span> <span class="co"># `term` as rownames</span></span>
-<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>NORM_MAR10 <span class="ot">&lt;-</span> mbased_MAR_10 <span class="sc">%&gt;%</span> </span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="sc">~</span>.x <span class="sc">%&gt;%</span> <span class="co"># for every simulated multiple imputation....</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">evaluate_multiple</span>()) <span class="sc">%&gt;%</span> <span class="co"># `term` as rownames</span></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>NORM_MAR10</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>               estimate  std.error  statistic       df    p.value       2.5 %
-(Intercept) 0.001603238 0.04645852 0.03169616 348.5569 0.51854740 -0.08984000
-V1          0.196535575 0.05984532 3.29800515 250.3704 0.01430677  0.07833064
-V2          0.194441165 0.06013341 3.25951009 252.4808 0.01360877  0.07577059
-V3          0.199583737 0.06019729 3.35240800 255.5595 0.01721504  0.08054181
-V4          0.204494554 0.06089791 3.37953344 208.1992 0.01451581  0.08393749
-                97.5 %    conf.low  conf.high true  cov          bias      rmse
-(Intercept) 0.09304648 -0.08984000 0.09304648  0.0 0.94  0.0016032381 0.9982278
-V1          0.31474051  0.07833064 0.31474051  0.2 0.97 -0.0034644252 0.9977833
-V2          0.31311174  0.07577059 0.31311174  0.2 0.97 -0.0055588353 0.9986009
-V3          0.31862566  0.08054181 0.31862566  0.2 0.95 -0.0004162629 0.9981793
-V4          0.32505162  0.08393749 0.32505162  0.2 0.97  0.0044945537 0.9990260</code></pre>
+(Intercept) 0.001005862 0.04660496 0.02084954 341.7765 0.51618883 -0.09072415
+V1          0.197962562 0.06019244 3.30554455 249.3924 0.01910127  0.07908405
+V2          0.199628616 0.06010135 3.33371466 255.0349 0.01812086  0.08095396
+V3          0.201297808 0.06004435 3.36459089 253.8494 0.01841385  0.08273589
+V4          0.199981719 0.06038766 3.32513541 235.3692 0.02251702  0.08062823
+                97.5 %    conf.low  conf.high true   cov          bias     rmse
+(Intercept) 0.09273588 -0.09072415 0.09273588  0.0 0.955  1.005862e-03 1.000545
+V1          0.31684107  0.07908405 0.31684107  0.2 0.950 -2.037438e-03 1.000256
+V2          0.31830328  0.08095396 0.31830328  0.2 0.958 -3.713841e-04 1.000340
+V3          0.31985973  0.08273589 0.31985973  0.2 0.951  1.297808e-03 1.000530
+V4          0.31933521  0.08062823 0.31933521  0.2 0.950 -1.828064e-05 1.000282</code></pre>
 </div>
 </div>
 </section>
@@ -466,39 +477,46 @@ V4          0.32505162  0.08393749 0.32505162  0.2 0.97  0.0044945537 0.9990260<
 <section id="mar-25-missing" class="level2">
 <h2 class="anchored" data-anchor-id="mar-25-missing">MAR 25% missing</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>mbased_MAR_25 <span class="ot">&lt;-</span> </span>
-<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>  simdata <span class="sc">%&gt;%</span></span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>  furrr<span class="sc">::</span><span class="fu">future_map</span>(<span class="cf">function</span>(x) {</span>
-<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>    x <span class="sc">%&gt;%</span> </span>
-<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ampute</span>(<span class="at">prop =</span> .<span class="dv">25</span>, <span class="co"># Amputation step</span></span>
-<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">patterns =</span> miss.patterns, <span class="co"># use the patterns</span></span>
-<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">mech =</span> <span class="st">"MAR"</span>) <span class="sc">%&gt;%</span> .<span class="sc">$</span>amp <span class="sc">%&gt;%</span> </span>
-<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mice</span>(<span class="at">m =</span> <span class="dv">5</span>, <span class="co"># Imputation step </span></span>
-<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>           <span class="at">maxit =</span> <span class="dv">5</span>,</span>
-<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a>           <span class="at">method =</span> <span class="st">"norm"</span>,</span>
-<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a>           <span class="at">print =</span> F)</span>
-<span id="cb45-12"><a href="#cb45-12" aria-hidden="true" tabindex="-1"></a>  }, <span class="at">.options =</span> <span class="fu">furrr_options</span>(<span class="at">seed =</span> <span class="dv">123</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>mbased_MAR_25 <span class="ot">&lt;-</span> </span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  simdata <span class="sc">%&gt;%</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  furrr<span class="sc">::</span><span class="fu">future_map</span>(<span class="cf">function</span>(x) {</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>    x <span class="sc">%&gt;%</span> </span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ampute</span>(<span class="at">prop =</span> .<span class="dv">25</span>, <span class="co"># Amputation step</span></span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">patterns =</span> miss.patterns, <span class="co"># use the patterns</span></span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">mech =</span> <span class="st">"MAR"</span>) <span class="sc">%&gt;%</span> .<span class="sc">$</span>amp <span class="sc">%&gt;%</span> </span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mice</span>(<span class="at">m =</span> <span class="dv">5</span>, <span class="co"># Imputation step </span></span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>           <span class="at">maxit =</span> <span class="dv">5</span>,</span>
+<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>           <span class="at">method =</span> <span class="st">"norm"</span>,</span>
+<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a>           <span class="at">print =</span> F)</span>
+<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a>  }, <span class="at">.options =</span> <span class="fu">furrr_options</span>(<span class="at">seed =</span> <span class="dv">123</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="evaluate-mar-25" class="level3">
 <h3 class="anchored" data-anchor-id="evaluate-mar-25">Evaluate MAR 25%</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>mbased_MAR_25 <span class="sc">%&gt;%</span> </span>
-<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="sc">~</span>.x <span class="sc">%&gt;%</span> <span class="co"># for every simulated multiple imputation....</span></span>
-<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">evaluate_multiple</span>()) <span class="sc">%&gt;%</span> <span class="co"># `term` as rownames</span></span>
-<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>NORM_MAR25 <span class="ot">&lt;-</span> mbased_MAR_25 <span class="sc">%&gt;%</span> </span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="sc">~</span>.x <span class="sc">%&gt;%</span> <span class="co"># for every simulated multiple imputation....</span></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">evaluate_multiple</span>()) <span class="sc">%&gt;%</span> <span class="co"># `term` as rownames</span></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>NORM_MAR25</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>               estimate  std.error  statistic        df    p.value       2.5 %
-(Intercept) 0.003462615 0.04921473 0.06676443 195.44829 0.52159181 -0.09415133
-V1          0.199815065 0.06494089 3.09452109 110.83988 0.02052772  0.06935353
-V2          0.194955396 0.06492630 3.03122644 126.09693 0.02441888  0.06449022
-V3          0.199578760 0.06432582 3.15382613 129.45955 0.02921095  0.07056293
-V4          0.197466136 0.06497782 3.06184527  96.58432 0.02741599  0.06695948
-               97.5 %    conf.low conf.high true  cov          bias     rmse
-(Intercept) 0.1010766 -0.09415133 0.1010766  0.0 0.94  0.0034626151 1.007595
-V1          0.3302766  0.06935353 0.3302766  0.2 0.97 -0.0001849348 1.007449
-V2          0.3254206  0.06449022 0.3254206  0.2 0.97 -0.0050446045 1.006225
-V3          0.3285946  0.07056293 0.3285946  0.2 0.95 -0.0004212405 1.005549
-V4          0.3279728  0.06695948 0.3279728  0.2 0.96 -0.0025338637 1.006764</code></pre>
+<pre><code>                estimate  std.error   statistic        df    p.value
+(Intercept) 0.0006707168 0.04933377 0.008066344 189.06849 0.50978243
+V1          0.1979450881 0.06505345 3.071532118 115.94746 0.03081323
+V2          0.1980872196 0.06536086 3.053869464 110.35161 0.03060857
+V3          0.2023556022 0.06491387 3.146983023 116.23517 0.03007219
+V4          0.1974898898 0.06637089 3.005714984  97.14608 0.03514198
+                  2.5 %     97.5 %    conf.low  conf.high true   cov
+(Intercept) -0.09715632 0.09849775 -0.09715632 0.09849775  0.0 0.956
+V1           0.06729844 0.32859174  0.06729844 0.32859174  0.2 0.957
+V2           0.06657169 0.32960275  0.06657169 0.32960275  0.2 0.962
+V3           0.07199387 0.33271734  0.07199387 0.33271734  0.2 0.965
+V4           0.06329267 0.33168711  0.06329267 0.33168711  0.2 0.961
+                     bias     rmse
+(Intercept)  0.0006707168 1.008537
+V1          -0.0020549119 1.008308
+V2          -0.0019127804 1.007885
+V3           0.0023556022 1.008188
+V4          -0.0025101102 1.008543</code></pre>
 </div>
 </div>
 </section>
@@ -506,39 +524,40 @@ V4          0.3279728  0.06695948 0.3279728  0.2 0.96 -0.0025338637 1.006764</co
 <section id="mar-50-missing" class="level2">
 <h2 class="anchored" data-anchor-id="mar-50-missing">MAR 50% missing</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>mbased_MAR_50 <span class="ot">&lt;-</span> </span>
-<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  simdata <span class="sc">%&gt;%</span></span>
-<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  furrr<span class="sc">::</span><span class="fu">future_map</span>(<span class="cf">function</span>(x) {</span>
-<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>    x <span class="sc">%&gt;%</span> </span>
-<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ampute</span>(<span class="at">prop =</span> .<span class="dv">5</span>, <span class="co"># Amputation step</span></span>
-<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">patterns =</span> miss.patterns, <span class="co"># use the patterns</span></span>
-<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">mech =</span> <span class="st">"MAR"</span>) <span class="sc">%&gt;%</span> .<span class="sc">$</span>amp <span class="sc">%&gt;%</span> </span>
-<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mice</span>(<span class="at">m =</span> <span class="dv">5</span>, <span class="co"># Imputation step </span></span>
-<span id="cb48-9"><a href="#cb48-9" aria-hidden="true" tabindex="-1"></a>           <span class="at">maxit =</span> <span class="dv">5</span>,</span>
-<span id="cb48-10"><a href="#cb48-10" aria-hidden="true" tabindex="-1"></a>           <span class="at">method =</span> <span class="st">"norm"</span>,</span>
-<span id="cb48-11"><a href="#cb48-11" aria-hidden="true" tabindex="-1"></a>           <span class="at">print =</span> F)</span>
-<span id="cb48-12"><a href="#cb48-12" aria-hidden="true" tabindex="-1"></a>  }, <span class="at">.options =</span> <span class="fu">furrr_options</span>(<span class="at">seed =</span> <span class="dv">123</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>mbased_MAR_50 <span class="ot">&lt;-</span> </span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>  simdata <span class="sc">%&gt;%</span></span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>  furrr<span class="sc">::</span><span class="fu">future_map</span>(<span class="cf">function</span>(x) {</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>    x <span class="sc">%&gt;%</span> </span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ampute</span>(<span class="at">prop =</span> .<span class="dv">5</span>, <span class="co"># Amputation step</span></span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">patterns =</span> miss.patterns, <span class="co"># use the patterns</span></span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">mech =</span> <span class="st">"MAR"</span>) <span class="sc">%&gt;%</span> .<span class="sc">$</span>amp <span class="sc">%&gt;%</span> </span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mice</span>(<span class="at">m =</span> <span class="dv">5</span>, <span class="co"># Imputation step </span></span>
+<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>           <span class="at">maxit =</span> <span class="dv">5</span>,</span>
+<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>           <span class="at">method =</span> <span class="st">"norm"</span>,</span>
+<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>           <span class="at">print =</span> F)</span>
+<span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a>  }, <span class="at">.options =</span> <span class="fu">furrr_options</span>(<span class="at">seed =</span> <span class="dv">123</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="evaluate-mar-50" class="level3">
 <h3 class="anchored" data-anchor-id="evaluate-mar-50">Evaluate MAR 50%</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>mbased_MAR_50 <span class="sc">%&gt;%</span> </span>
-<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="sc">~</span>.x <span class="sc">%&gt;%</span> <span class="co"># for every simulated multiple imputation....</span></span>
-<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">evaluate_multiple</span>()) <span class="sc">%&gt;%</span> <span class="co"># `term` as rownames</span></span>
-<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>NORM_MAR50 <span class="ot">&lt;-</span> mbased_MAR_50 <span class="sc">%&gt;%</span> </span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="sc">~</span>.x <span class="sc">%&gt;%</span> <span class="co"># for every simulated multiple imputation....</span></span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">evaluate_multiple</span>()) <span class="sc">%&gt;%</span> <span class="co"># `term` as rownames</span></span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>NORM_MAR50</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>               estimate  std.error  statistic       df    p.value       2.5 %
-(Intercept) 0.003218043 0.05565350 0.07003995 74.53217 0.52115186 -0.11015965
-V1          0.201304716 0.07485725 2.75094538 44.86082 0.04808027  0.04398828
-V2          0.196355567 0.07389507 2.76040886 57.26492 0.05600556  0.04181231
-V3          0.198497224 0.07506838 2.70051988 40.56663 0.06212413  0.04053041
-V4          0.195657282 0.07663558 2.61539869 39.66213 0.08752491  0.03312548
-               97.5 %    conf.low conf.high true  cov         bias     rmse
-(Intercept) 0.1165957 -0.11015965 0.1165957  0.0 0.95  0.003218043 1.022872
-V1          0.3586212  0.04398828 0.3586212  0.2 0.96  0.001304716 1.023217
-V2          0.3508988  0.04181231 0.3508988  0.2 0.97 -0.003644433 1.019196
-V3          0.3564640  0.04053041 0.3564640  0.2 0.95 -0.001502776 1.022209
-V4          0.3581891  0.03312548 0.3581891  0.2 0.93 -0.004342718 1.017287</code></pre>
+(Intercept) 0.001400722 0.05505816 0.02140177 89.18030 0.51435418 -0.11039137
+V1          0.199272987 0.07510169 2.71905962 45.97361 0.06086000  0.04158531
+V2          0.197737448 0.07604928 2.66946507 40.17044 0.06483911  0.03721269
+V3          0.202730855 0.07451462 2.78337896 48.87579 0.05642713  0.04652080
+V4          0.191120416 0.07722923 2.55318632 37.95932 0.08655606  0.02681293
+               97.5 %    conf.low conf.high true   cov          bias     rmse
+(Intercept) 0.1131928 -0.11039137 0.1131928  0.0 0.959  0.0014007219 1.023452
+V1          0.3569607  0.04158531 0.3569607  0.2 0.962 -0.0007270126 1.025234
+V2          0.3582622  0.03721269 0.3582622  0.2 0.969 -0.0022625521 1.022673
+V3          0.3589409  0.04652080 0.3589409  0.2 0.959  0.0027308546 1.024502
+V4          0.3554279  0.02681293 0.3554279  0.2 0.953 -0.0088795844 1.023654</code></pre>
 </div>
 </div>
 </section>
@@ -547,10 +566,22 @@ V4          0.3581891  0.03312548 0.3581891  0.2 0.93 -0.004342718 1.017287</cod
 <section id="runtime" class="level1">
 <h1>Runtime</h1>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Sys.time</span>() <span class="sc">-</span> st</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Sys.time</span>() <span class="sc">-</span> st</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Time difference of 9.146658 mins</code></pre>
+<pre><code>Time difference of 2.55744 mins</code></pre>
 </div>
+</div>
+</section>
+<section id="save-results" class="level1">
+<h1>Save results</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(NORM_MCAR10,</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>     NORM_MCAR25,</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>     NORM_MCAR50,</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>     NORM_MAR10,</span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>     NORM_MAR25,</span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>     NORM_MAR50,</span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>     <span class="at">file =</span> <span class="st">"NORM_results.RData"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 

@@ -26,7 +26,7 @@ st <- Sys.time()
 # Fixed over simulations
 p <- 49 # number of predictors
 n <- 500 # number of observations
-nsim <- 100 # number of simulations
+nsim <- 1000 # number of simulations
 rho <- 0.5 # correlation between the predictors
 
 set.seed(123) # reproducibility of the block
@@ -125,11 +125,13 @@ evaluate_multiple <- function(x){
 mbased_MCAR_10[[1]] %>% 
   evaluate_multiple()
 
-mbased_MCAR_10 %>% 
+NORM_MCAR10 <- mbased_MCAR_10 %>% 
   map(~.x %>% # for every simulated multiple imputation....
         evaluate_multiple()) %>% # `term` as rownames
   Reduce("+", .) / nsim
 ## BEWARE: ABOVE CODE puts the 5 imputed RMSE's in the rows!!!
+
+NORM_MCAR10
 ```
 
 ## MCAR 25% missing
@@ -150,10 +152,11 @@ mbased_MCAR_25 <-
 
 ### Evaluate MCAR 25% 
 ```{r}
-mbased_MCAR_25 %>% 
+NORM_MCAR25 <- mbased_MCAR_25 %>% 
   map(~.x %>% # for every simulated multiple imputation....
         evaluate_multiple()) %>% # `term` as rownames
   Reduce("+", .) / nsim
+NORM_MCAR25
 ```
 
 ## MCAR 50% missing
@@ -174,10 +177,11 @@ mbased_MCAR_50 <-
 
 ### Evaluate MCAR 50% 
 ```{r}
-mbased_MCAR_50 %>% 
+NORM_MCAR50 <- mbased_MCAR_50 %>% 
   map(~.x %>% # for every simulated multiple imputation....
         evaluate_multiple()) %>% # `term` as rownames
   Reduce("+", .) / nsim
+NORM_MCAR50
 ```
 
 # MAR 
@@ -201,10 +205,11 @@ mbased_MAR_10 <-
 
 ### Evaluate MAR 10% 
 ```{r}
-mbased_MAR_10 %>% 
+NORM_MAR10 <- mbased_MAR_10 %>% 
   map(~.x %>% # for every simulated multiple imputation....
         evaluate_multiple()) %>% # `term` as rownames
   Reduce("+", .) / nsim
+NORM_MAR10
 ```
 
 ## MAR 25% missing
@@ -225,10 +230,11 @@ mbased_MAR_25 <-
 
 ### Evaluate MAR 25% 
 ```{r}
-mbased_MAR_25 %>% 
+NORM_MAR25 <- mbased_MAR_25 %>% 
   map(~.x %>% # for every simulated multiple imputation....
         evaluate_multiple()) %>% # `term` as rownames
   Reduce("+", .) / nsim
+NORM_MAR25
 ```
 
 ## MAR 50% missing
@@ -249,13 +255,25 @@ mbased_MAR_50 <-
 
 ### Evaluate MAR 50% 
 ```{r}
-mbased_MAR_50 %>% 
+NORM_MAR50 <- mbased_MAR_50 %>% 
   map(~.x %>% # for every simulated multiple imputation....
         evaluate_multiple()) %>% # `term` as rownames
   Reduce("+", .) / nsim
+NORM_MAR50
 ```
 
 # Runtime
 ```{r}
 Sys.time() - st
+```
+
+# Save results
+```{r}
+save(NORM_MCAR10,
+     NORM_MCAR25,
+     NORM_MCAR50,
+     NORM_MAR10,
+     NORM_MAR25,
+     NORM_MAR50,
+     file = "NORM_results.RData")
 ```

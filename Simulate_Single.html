@@ -304,12 +304,13 @@ V3           0.2 TRUE  0.07485909 0.9209609
 V4           0.2 TRUE -0.04164923 0.9209609</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># all simulations combined</span></span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>mbased_MCAR_10 <span class="sc">%&gt;%</span> </span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>SINGLE_MCAR10 <span class="ot">&lt;-</span> mbased_MCAR_10 <span class="sc">%&gt;%</span> </span>
 <span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="sc">~</span>.x <span class="sc">%&gt;%</span> <span class="co"># for every simulated multiple imputation....</span></span>
 <span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">complete</span>() <span class="sc">%$%</span> <span class="co"># for every completed data set....</span></span>
 <span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">lm</span>(y <span class="sc">~</span> V1 <span class="sc">+</span> V2 <span class="sc">+</span> V3 <span class="sc">+</span> V4) <span class="sc">%&gt;%</span> </span>
 <span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">evaluate_single</span>()) <span class="sc">%&gt;%</span>  <span class="co"># `term` as rownames</span></span>
-<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>SINGLE_MCAR10</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                Estimate Std. Error    t value   Pr(&gt;|t|)       2.5 %
 (Intercept) 0.0007255793 0.04408432 0.01527734 0.49580945 -0.08588988
@@ -346,12 +347,13 @@ V4          0.31685159  0.2 0.931 0.0048472902 0.9762736</code></pre>
 <section id="evaluate-mcar-25" class="level3">
 <h3 class="anchored" data-anchor-id="evaluate-mcar-25">Evaluate MCAR 25%</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>mbased_MCAR_25 <span class="sc">%&gt;%</span> </span>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>SINGLE_MCAR25 <span class="ot">&lt;-</span> mbased_MCAR_25 <span class="sc">%&gt;%</span> </span>
 <span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="sc">~</span>.x <span class="sc">%&gt;%</span> <span class="co"># for every simulated multiple imputation....</span></span>
 <span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">complete</span>() <span class="sc">%$%</span> <span class="co"># for every completed data set....</span></span>
 <span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">lm</span>(y <span class="sc">~</span> V1 <span class="sc">+</span> V2 <span class="sc">+</span> V3 <span class="sc">+</span> V4) <span class="sc">%&gt;%</span> </span>
 <span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">evaluate_single</span>()) <span class="sc">%&gt;%</span>  <span class="co"># `term` as rownames</span></span>
-<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>SINGLE_MCAR25</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>               Estimate Std. Error    t value   Pr(&gt;|t|)       2.5 %     97.5 %
 (Intercept) 0.001020577 0.04280245 0.02258513 0.47558744 -0.08307630 0.08511746
@@ -388,12 +390,13 @@ V4           0.2 0.897 0.009025312 0.9471466</code></pre>
 <section id="evaluate-mcar-50" class="level3">
 <h3 class="anchored" data-anchor-id="evaluate-mcar-50">Evaluate MCAR 50%</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>mbased_MCAR_50 <span class="sc">%&gt;%</span> </span>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>SINGLE_MCAR50 <span class="ot">&lt;-</span> mbased_MCAR_50 <span class="sc">%&gt;%</span> </span>
 <span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="sc">~</span>.x <span class="sc">%&gt;%</span> <span class="co"># for every simulated multiple imputation....</span></span>
 <span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">complete</span>() <span class="sc">%$%</span> <span class="co"># for every completed data set....</span></span>
 <span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">lm</span>(y <span class="sc">~</span> V1 <span class="sc">+</span> V2 <span class="sc">+</span> V3 <span class="sc">+</span> V4) <span class="sc">%&gt;%</span> </span>
 <span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">evaluate_single</span>()) <span class="sc">%&gt;%</span>  <span class="co"># `term` as rownames</span></span>
-<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>SINGLE_MCAR50</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                Estimate Std. Error    t value   Pr(&gt;|t|)       2.5 %
 (Intercept) 0.0008688621 0.04080325 0.02007063 0.44079496 -0.07930006
@@ -434,12 +437,13 @@ V4          0.32615807  0.2 0.786 0.0125072418 0.901465</code></pre>
 <section id="evaluate-mar-10" class="level3">
 <h3 class="anchored" data-anchor-id="evaluate-mar-10">Evaluate MAR 10%</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>mbased_MAR_10 <span class="sc">%&gt;%</span> </span>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>SINGLE_MAR10 <span class="ot">&lt;-</span> mbased_MAR_10 <span class="sc">%&gt;%</span> </span>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="sc">~</span>.x <span class="sc">%&gt;%</span> <span class="co"># for every simulated multiple imputation....</span></span>
 <span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">complete</span>() <span class="sc">%$%</span> <span class="co"># for every completed data set....</span></span>
 <span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">lm</span>(y <span class="sc">~</span> V1 <span class="sc">+</span> V2 <span class="sc">+</span> V3 <span class="sc">+</span> V4) <span class="sc">%&gt;%</span> </span>
 <span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">evaluate_single</span>()) <span class="sc">%&gt;%</span>  <span class="co"># `term` as rownames</span></span>
-<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>SINGLE_MAR10</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>               Estimate Std. Error   t value   Pr(&gt;|t|)       2.5 %     97.5 %
 (Intercept) 0.007164051 0.04413334 0.1620283 0.49372952 -0.07954772 0.09387582
@@ -476,12 +480,13 @@ V4           0.2 0.920 0.004835497 0.9771699</code></pre>
 <section id="evaluate-mar-25" class="level3">
 <h3 class="anchored" data-anchor-id="evaluate-mar-25">Evaluate MAR 25%</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>mbased_MAR_25 <span class="sc">%&gt;%</span> </span>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>SINGLE_MAR25 <span class="ot">&lt;-</span> mbased_MAR_25 <span class="sc">%&gt;%</span> </span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="sc">~</span>.x <span class="sc">%&gt;%</span> <span class="co"># for every simulated multiple imputation....</span></span>
 <span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">complete</span>() <span class="sc">%$%</span> <span class="co"># for every completed data set....</span></span>
 <span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">lm</span>(y <span class="sc">~</span> V1 <span class="sc">+</span> V2 <span class="sc">+</span> V3 <span class="sc">+</span> V4) <span class="sc">%&gt;%</span> </span>
 <span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">evaluate_single</span>()) <span class="sc">%&gt;%</span>  <span class="co"># `term` as rownames</span></span>
-<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>SINGLE_MAR25</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>              Estimate Std. Error   t value   Pr(&gt;|t|)       2.5 %     97.5 %
 (Intercept) 0.01526372 0.04288457 0.3552932 0.44222475 -0.06899451 0.09952195
@@ -518,12 +523,13 @@ V4           0.2 0.896 0.010963849 0.9483096</code></pre>
 <section id="evaluate-mar-50" class="level3">
 <h3 class="anchored" data-anchor-id="evaluate-mar-50">Evaluate MAR 50%</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>mbased_MAR_50 <span class="sc">%&gt;%</span> </span>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>SINGLE_MAR50 <span class="ot">&lt;-</span> mbased_MAR_50 <span class="sc">%&gt;%</span> </span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="sc">~</span>.x <span class="sc">%&gt;%</span> <span class="co"># for every simulated multiple imputation....</span></span>
 <span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">complete</span>() <span class="sc">%$%</span> <span class="co"># for every completed data set....</span></span>
 <span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">lm</span>(y <span class="sc">~</span> V1 <span class="sc">+</span> V2 <span class="sc">+</span> V3 <span class="sc">+</span> V4) <span class="sc">%&gt;%</span> </span>
 <span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">evaluate_single</span>()) <span class="sc">%&gt;%</span>  <span class="co"># `term` as rownames</span></span>
-<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Reduce</span>(<span class="st">"+"</span>, .) <span class="sc">/</span> nsim</span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>SINGLE_MAR50</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>              Estimate Std. Error   t value   Pr(&gt;|t|)       2.5 %    97.5 %
 (Intercept) 0.02009591 0.04090352 0.4906583 0.40430473 -0.06027001 0.1004618
@@ -547,8 +553,20 @@ V4           0.2 0.778 0.01423504 0.9023898</code></pre>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Sys.time</span>() <span class="sc">-</span> st</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Time difference of 6.345567 mins</code></pre>
+<pre><code>Time difference of 33.30818 secs</code></pre>
 </div>
+</div>
+</section>
+<section id="save-results" class="level1">
+<h1>Save results</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(SINGLE_MCAR10,</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>     SINGLE_MCAR25,</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>     SINGLE_MCAR50,</span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>     SINGLE_MAR10,</span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>     SINGLE_MAR25,</span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>     SINGLE_MAR50,</span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>     <span class="at">file =</span> <span class="st">"SINGLE_results.RData"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 

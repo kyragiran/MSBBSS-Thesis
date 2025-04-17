@@ -143,22 +143,39 @@ evaluate_multiple_imputation <- function(imputed_list, true_coefs) {
   return(result)
 }
 
-  evaluate_vae_imputation <- function(imputed_list, true_coefs) {
-  models <- lapply(imputed_list, function(data) lm(y ~ V1 + V2 + V3 + V4, data = data))
-  est_list <- lapply(models, coef)
-  ci_list <- lapply(models, confint)
-  se_list <- lapply(models, function(mod) summary(mod)$coefficients[, "Std. Error"])
-  bias_list <- lapply(est_list, function(est) est - true_coefs[names(est)])
-  coverage_list <- lapply(ci_list, function(ci) (ci[, 1] < true_coefs[rownames(ci)]) & (ci[, 2] > true_coefs[rownames(ci)]))
-  rmse_list <- sapply(models, function(mod) {
-    preds <- predict(mod, newdata = imputed_list[[1]])
-    sqrt(mean((imputed_list[[1]]$y - preds)^2))
+evaluate_vae_imputation <- function(imputed_list, true_coefs) {
+  terms <- names(true_coefs)
+  results <- lapply(imputed_list, function(data) {
+    model <- lm(y ~ V1 + V2 + V3 + V4, data = data)
+    summary_model <- summary(model)
+    list(est = coef(model), var = summary_model$coefficients[, "Std. Error"]^2)
   })
-  avg_estimate <- rowMeans(do.call(cbind, est_list))
-  avg_se <- rowMeans(do.call(cbind, se_list))
-  avg_bias <- rowMeans(do.call(cbind, bias_list))
-  avg_coverage <- rowMeans(do.call(cbind, coverage_list))
-  result <- data.frame(estimate = avg_estimate, std.error = avg_se, bias = avg_bias, coverage = avg_coverage, rmse = mean(rmse_list))
-  rownames(result) <- names(avg_estimate)
-  return(result)
+  
+  pooled_results <- lapply(terms, function(term) {
+    ests <- sapply(results, function(x) x$est[term])
+    vars <- sapply(results, function(x) x$var[term])
+    #browser()
+    ncases <- imputed_list[[1]] %>% nrow() # number of complete data cases
+    nparam <- length(terms) # number of model parameters
+    pooled <- pool.scalar(Q = ests, U = vars, n = ncases - nparam)
+    ci_low <- pooled$qbar - qt(0.975, df = pooled$df) * sqrt(pooled$t)
+    ci_up <- pooled$qbar + qt(0.975, df = pooled$df) * sqrt(pooled$t)
+    #browser()
+    ci_width <- ci_up - ci_low
+    data.frame(
+      estimate = pooled$qbar,
+      std.error = sqrt(pooled$t),
+      bias = pooled$qbar - true_coefs[term],
+      low = ci_low,
+      up = ci_up,
+      coverage = (ci_low < true_coefs[term]) & (ci_up > true_coefs[term]),
+      ci.width = ci_width,
+      within.var = pooled$ubar,
+      between.var = pooled$b,
+      total.var = pooled$t,
+      rmse = sqrt(mean((ests - true_coefs[term])^2)),
+      row.names = term
+    )
+  })
+  return(do.call(rbind, pooled_results))
 }

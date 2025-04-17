@@ -119,12 +119,13 @@ mbased_MCAR_10[[1]] %>%
   evaluate_single()
 
 # all simulations combined
-mbased_MCAR_10 %>% 
+SINGLE_MCAR10 <- mbased_MCAR_10 %>% 
   map(~.x %>% # for every simulated multiple imputation....
         complete() %$% # for every completed data set....
         lm(y ~ V1 + V2 + V3 + V4) %>% 
         evaluate_single()) %>%  # `term` as rownames
   Reduce("+", .) / nsim
+SINGLE_MCAR10
 ```
 
 ## MCAR 25% missing
@@ -145,12 +146,13 @@ mbased_MCAR_25 <-
 
 ### Evaluate MCAR 25% 
 ```{r}
-mbased_MCAR_25 %>% 
+SINGLE_MCAR25 <- mbased_MCAR_25 %>% 
   map(~.x %>% # for every simulated multiple imputation....
         complete() %$% # for every completed data set....
         lm(y ~ V1 + V2 + V3 + V4) %>% 
         evaluate_single()) %>%  # `term` as rownames
   Reduce("+", .) / nsim
+SINGLE_MCAR25
 ```
 
 ## MCAR 50% missing
@@ -171,12 +173,13 @@ mbased_MCAR_50 <-
 
 ### Evaluate MCAR 50% 
 ```{r}
-mbased_MCAR_50 %>% 
+SINGLE_MCAR50 <- mbased_MCAR_50 %>% 
   map(~.x %>% # for every simulated multiple imputation....
         complete() %$% # for every completed data set....
         lm(y ~ V1 + V2 + V3 + V4) %>% 
         evaluate_single()) %>%  # `term` as rownames
   Reduce("+", .) / nsim
+SINGLE_MCAR50
 ```
 
 # MAR 
@@ -200,12 +203,13 @@ mbased_MAR_10 <-
 
 ### Evaluate MAR 10% 
 ```{r}
-mbased_MAR_10 %>% 
+SINGLE_MAR10 <- mbased_MAR_10 %>% 
   map(~.x %>% # for every simulated multiple imputation....
         complete() %$% # for every completed data set....
         lm(y ~ V1 + V2 + V3 + V4) %>% 
         evaluate_single()) %>%  # `term` as rownames
   Reduce("+", .) / nsim
+SINGLE_MAR10
 ```
 
 ## MAR 25% missing
@@ -226,12 +230,13 @@ mbased_MAR_25 <-
 
 ### Evaluate MAR 25% 
 ```{r}
-mbased_MAR_25 %>% 
+SINGLE_MAR25 <- mbased_MAR_25 %>% 
   map(~.x %>% # for every simulated multiple imputation....
         complete() %$% # for every completed data set....
         lm(y ~ V1 + V2 + V3 + V4) %>% 
         evaluate_single()) %>%  # `term` as rownames
   Reduce("+", .) / nsim
+SINGLE_MAR25
 ```
 
 ## MAR 50% missing
@@ -252,16 +257,28 @@ mbased_MAR_50 <-
 
 ### Evaluate MAR 50% 
 ```{r}
-mbased_MAR_50 %>% 
+SINGLE_MAR50 <- mbased_MAR_50 %>% 
   map(~.x %>% # for every simulated multiple imputation....
         complete() %$% # for every completed data set....
         lm(y ~ V1 + V2 + V3 + V4) %>% 
         evaluate_single()) %>%  # `term` as rownames
   Reduce("+", .) / nsim
+SINGLE_MAR50
 ```
 
 # Runtime
 ```{r}
 Sys.time() - st
+```
+
+# Save results
+```{r}
+save(SINGLE_MCAR10,
+     SINGLE_MCAR25,
+     SINGLE_MCAR50,
+     SINGLE_MAR10,
+     SINGLE_MAR25,
+     SINGLE_MAR50,
+     file = "SINGLE_results.RData")
 ```
 
