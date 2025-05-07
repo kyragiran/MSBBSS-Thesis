@@ -273,43 +273,84 @@ F-statistic: 65.79 on 4 and 495 DF,  p-value: &lt; 2.2e-16</code></pre>
 <section id="evaluate-mcar-10" class="level3">
 <h3 class="anchored" data-anchor-id="evaluate-mcar-10">Evaluate MCAR 10%</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Evaluation function</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>evaluate_vae_imputation <span class="ot">&lt;-</span> <span class="cf">function</span>(imputed_list, true_coefs) {</span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  terms <span class="ot">&lt;-</span> <span class="fu">names</span>(true_coefs)</span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  results <span class="ot">&lt;-</span> <span class="fu">lapply</span>(imputed_list, <span class="cf">function</span>(data) {</span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    model <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> V1 <span class="sc">+</span> V2 <span class="sc">+</span> V3 <span class="sc">+</span> V4, <span class="at">data =</span> data)</span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    summary_model <span class="ot">&lt;-</span> <span class="fu">summary</span>(model)</span>
-<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">est =</span> <span class="fu">coef</span>(model), <span class="at">var =</span> summary_model<span class="sc">$</span>coefficients[, <span class="st">"Std. Error"</span>]<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>  })</span>
-<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>  pooled_results <span class="ot">&lt;-</span> <span class="fu">lapply</span>(terms, <span class="cf">function</span>(term) {</span>
-<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>    ests <span class="ot">&lt;-</span> <span class="fu">sapply</span>(results, <span class="cf">function</span>(x) x<span class="sc">$</span>est[term])</span>
-<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>    vars <span class="ot">&lt;-</span> <span class="fu">sapply</span>(results, <span class="cf">function</span>(x) x<span class="sc">$</span>var[term])</span>
-<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">#browser()</span></span>
-<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>    ncases <span class="ot">&lt;-</span> imputed_list[[<span class="dv">1</span>]] <span class="sc">%&gt;%</span> <span class="fu">nrow</span>() <span class="co"># number of complete data cases</span></span>
-<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>    nparam <span class="ot">&lt;-</span> <span class="fu">length</span>(terms) <span class="co"># number of model parameters</span></span>
-<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>    pooled <span class="ot">&lt;-</span> <span class="fu">pool.scalar</span>(<span class="at">Q =</span> ests, <span class="at">U =</span> vars, <span class="at">n =</span> ncases <span class="sc">-</span> nparam)</span>
-<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>    ci_low <span class="ot">&lt;-</span> pooled<span class="sc">$</span>qbar <span class="sc">-</span> <span class="fu">qt</span>(<span class="fl">0.975</span>, <span class="at">df =</span> pooled<span class="sc">$</span>df) <span class="sc">*</span> <span class="fu">sqrt</span>(pooled<span class="sc">$</span>t)</span>
-<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>    ci_up <span class="ot">&lt;-</span> pooled<span class="sc">$</span>qbar <span class="sc">+</span> <span class="fu">qt</span>(<span class="fl">0.975</span>, <span class="at">df =</span> pooled<span class="sc">$</span>df) <span class="sc">*</span> <span class="fu">sqrt</span>(pooled<span class="sc">$</span>t)</span>
-<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a>    <span class="co">#browser()</span></span>
-<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a>    ci_width <span class="ot">&lt;-</span> ci_up <span class="sc">-</span> ci_low</span>
-<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">data.frame</span>(</span>
-<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a>      <span class="at">estimate =</span> pooled<span class="sc">$</span>qbar,</span>
-<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a>      <span class="at">std.error =</span> <span class="fu">sqrt</span>(pooled<span class="sc">$</span>t),</span>
-<span id="cb27-24"><a href="#cb27-24" aria-hidden="true" tabindex="-1"></a>      <span class="at">bias =</span> pooled<span class="sc">$</span>qbar <span class="sc">-</span> true_coefs[term],</span>
-<span id="cb27-25"><a href="#cb27-25" aria-hidden="true" tabindex="-1"></a>      <span class="at">low =</span> ci_low,</span>
-<span id="cb27-26"><a href="#cb27-26" aria-hidden="true" tabindex="-1"></a>      <span class="at">up =</span> ci_up,</span>
-<span id="cb27-27"><a href="#cb27-27" aria-hidden="true" tabindex="-1"></a>      <span class="at">coverage =</span> (ci_low <span class="sc">&lt;</span> true_coefs[term]) <span class="sc">&amp;</span> (ci_up <span class="sc">&gt;</span> true_coefs[term]),</span>
-<span id="cb27-28"><a href="#cb27-28" aria-hidden="true" tabindex="-1"></a>      <span class="at">ci.width =</span> ci_width,</span>
-<span id="cb27-29"><a href="#cb27-29" aria-hidden="true" tabindex="-1"></a>      <span class="at">within.var =</span> pooled<span class="sc">$</span>ubar,</span>
-<span id="cb27-30"><a href="#cb27-30" aria-hidden="true" tabindex="-1"></a>      <span class="at">between.var =</span> pooled<span class="sc">$</span>b,</span>
-<span id="cb27-31"><a href="#cb27-31" aria-hidden="true" tabindex="-1"></a>      <span class="at">total.var =</span> pooled<span class="sc">$</span>t,</span>
-<span id="cb27-32"><a href="#cb27-32" aria-hidden="true" tabindex="-1"></a>      <span class="at">rmse =</span> <span class="fu">sqrt</span>(<span class="fu">mean</span>((ests <span class="sc">-</span> true_coefs[term])<span class="sc">^</span><span class="dv">2</span>)),</span>
-<span id="cb27-33"><a href="#cb27-33" aria-hidden="true" tabindex="-1"></a>      <span class="at">row.names =</span> term</span>
-<span id="cb27-34"><a href="#cb27-34" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb27-35"><a href="#cb27-35" aria-hidden="true" tabindex="-1"></a>  })</span>
-<span id="cb27-36"><a href="#cb27-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">do.call</span>(rbind, pooled_results))</span>
-<span id="cb27-37"><a href="#cb27-37" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># # Evaluation function</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="co"># evaluate_vae_imputation &lt;- function(imputed_list, true_coefs) {</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   terms &lt;- names(true_coefs)</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="co">#   results &lt;- lapply(imputed_list, function(data) {</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="co">#     model &lt;- lm(y ~ V1 + V2 + V3 + V4, data = data)</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a><span class="co">#     summary_model &lt;- summary(model)</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="co">#     list(est = coef(model), var = summary_model$coefficients[, "Std. Error"]^2)</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a><span class="co">#   })</span></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a><span class="co">#   </span></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a><span class="co">#   pooled_results &lt;- lapply(terms, function(term) {</span></span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a><span class="co">#     ests &lt;- sapply(results, function(x) x$est[term])</span></span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a><span class="co">#     vars &lt;- sapply(results, function(x) x$var[term])</span></span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a><span class="co">#     #browser()</span></span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a><span class="co">#     ncases &lt;- imputed_list[[1]] %&gt;% nrow() # number of complete data cases</span></span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a><span class="co">#     nparam &lt;- length(terms) # number of model parameters</span></span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a><span class="co">#     pooled &lt;- pool.scalar(Q = ests, U = vars, n = ncases - nparam)</span></span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a><span class="co">#     ci_low &lt;- pooled$qbar - qt(0.975, df = pooled$df) * sqrt(pooled$t)</span></span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a><span class="co">#     ci_up &lt;- pooled$qbar + qt(0.975, df = pooled$df) * sqrt(pooled$t)</span></span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a><span class="co">#     #browser()</span></span>
+<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a><span class="co">#     ci_width &lt;- ci_up - ci_low</span></span>
+<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a><span class="co">#     data.frame(</span></span>
+<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a><span class="co">#       estimate = pooled$qbar,</span></span>
+<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a><span class="co">#       std.error = sqrt(pooled$t),</span></span>
+<span id="cb27-24"><a href="#cb27-24" aria-hidden="true" tabindex="-1"></a><span class="co">#       bias = pooled$qbar - true_coefs[term],</span></span>
+<span id="cb27-25"><a href="#cb27-25" aria-hidden="true" tabindex="-1"></a><span class="co">#       low = ci_low,</span></span>
+<span id="cb27-26"><a href="#cb27-26" aria-hidden="true" tabindex="-1"></a><span class="co">#       up = ci_up,</span></span>
+<span id="cb27-27"><a href="#cb27-27" aria-hidden="true" tabindex="-1"></a><span class="co">#       coverage = (ci_low &lt; true_coefs[term]) &amp; (ci_up &gt; true_coefs[term]),</span></span>
+<span id="cb27-28"><a href="#cb27-28" aria-hidden="true" tabindex="-1"></a><span class="co">#       ci.width = ci_width,</span></span>
+<span id="cb27-29"><a href="#cb27-29" aria-hidden="true" tabindex="-1"></a><span class="co">#       within.var = pooled$ubar,</span></span>
+<span id="cb27-30"><a href="#cb27-30" aria-hidden="true" tabindex="-1"></a><span class="co">#       between.var = pooled$b,</span></span>
+<span id="cb27-31"><a href="#cb27-31" aria-hidden="true" tabindex="-1"></a><span class="co">#       total.var = pooled$t,</span></span>
+<span id="cb27-32"><a href="#cb27-32" aria-hidden="true" tabindex="-1"></a><span class="co">#       rmse = sqrt(mean((ests - true_coefs[term])^2)),</span></span>
+<span id="cb27-33"><a href="#cb27-33" aria-hidden="true" tabindex="-1"></a><span class="co">#       row.names = term</span></span>
+<span id="cb27-34"><a href="#cb27-34" aria-hidden="true" tabindex="-1"></a><span class="co">#     )</span></span>
+<span id="cb27-35"><a href="#cb27-35" aria-hidden="true" tabindex="-1"></a><span class="co">#   })</span></span>
+<span id="cb27-36"><a href="#cb27-36" aria-hidden="true" tabindex="-1"></a><span class="co">#   return(do.call(rbind, pooled_results))</span></span>
+<span id="cb27-37"><a href="#cb27-37" aria-hidden="true" tabindex="-1"></a><span class="co"># }</span></span>
+<span id="cb27-38"><a href="#cb27-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-39"><a href="#cb27-39" aria-hidden="true" tabindex="-1"></a>evaluate_vae_imputation <span class="ot">&lt;-</span> <span class="cf">function</span>(imputed_list, true_coefs) {</span>
+<span id="cb27-40"><a href="#cb27-40" aria-hidden="true" tabindex="-1"></a>  terms <span class="ot">&lt;-</span> <span class="fu">names</span>(true_coefs)</span>
+<span id="cb27-41"><a href="#cb27-41" aria-hidden="true" tabindex="-1"></a>  results <span class="ot">&lt;-</span> <span class="fu">lapply</span>(imputed_list, <span class="cf">function</span>(data) {</span>
+<span id="cb27-42"><a href="#cb27-42" aria-hidden="true" tabindex="-1"></a>    model <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> V1 <span class="sc">+</span> V2 <span class="sc">+</span> V3 <span class="sc">+</span> V4, <span class="at">data =</span> data)</span>
+<span id="cb27-43"><a href="#cb27-43" aria-hidden="true" tabindex="-1"></a>    rmse <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">mean</span>((<span class="fu">predict</span>(model) <span class="sc">-</span> model<span class="sc">$</span>model<span class="sc">$</span>y)<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb27-44"><a href="#cb27-44" aria-hidden="true" tabindex="-1"></a>    summary_model <span class="ot">&lt;-</span> <span class="fu">summary</span>(model)</span>
+<span id="cb27-45"><a href="#cb27-45" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">est =</span> <span class="fu">coef</span>(model), <span class="at">var =</span> summary_model<span class="sc">$</span>coefficients[, <span class="st">"Std. Error"</span>]<span class="sc">^</span><span class="dv">2</span>, <span class="at">rmse =</span> rmse)</span>
+<span id="cb27-46"><a href="#cb27-46" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb27-47"><a href="#cb27-47" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb27-48"><a href="#cb27-48" aria-hidden="true" tabindex="-1"></a>  pooled_results <span class="ot">&lt;-</span> <span class="fu">lapply</span>(terms, <span class="cf">function</span>(term) {</span>
+<span id="cb27-49"><a href="#cb27-49" aria-hidden="true" tabindex="-1"></a>    ests <span class="ot">&lt;-</span> <span class="fu">sapply</span>(results, <span class="cf">function</span>(x) x<span class="sc">$</span>est[term])</span>
+<span id="cb27-50"><a href="#cb27-50" aria-hidden="true" tabindex="-1"></a>    vars <span class="ot">&lt;-</span> <span class="fu">sapply</span>(results, <span class="cf">function</span>(x) x<span class="sc">$</span>var[term])</span>
+<span id="cb27-51"><a href="#cb27-51" aria-hidden="true" tabindex="-1"></a>    rmse <span class="ot">&lt;-</span> <span class="fu">sapply</span>(results, <span class="cf">function</span>(x) x<span class="sc">$</span>rmse)</span>
+<span id="cb27-52"><a href="#cb27-52" aria-hidden="true" tabindex="-1"></a>    <span class="co">#browser()</span></span>
+<span id="cb27-53"><a href="#cb27-53" aria-hidden="true" tabindex="-1"></a>    ncases <span class="ot">&lt;-</span> imputed_list[[<span class="dv">1</span>]] <span class="sc">%&gt;%</span> <span class="fu">nrow</span>() <span class="co"># number of complete data cases</span></span>
+<span id="cb27-54"><a href="#cb27-54" aria-hidden="true" tabindex="-1"></a>    nparam <span class="ot">&lt;-</span> <span class="fu">length</span>(terms) <span class="co"># number of model parameters</span></span>
+<span id="cb27-55"><a href="#cb27-55" aria-hidden="true" tabindex="-1"></a>    pooled <span class="ot">&lt;-</span> <span class="fu">pool.scalar</span>(<span class="at">Q =</span> ests, <span class="at">U =</span> vars, <span class="at">n =</span> ncases <span class="sc">-</span> nparam)</span>
+<span id="cb27-56"><a href="#cb27-56" aria-hidden="true" tabindex="-1"></a>    ci_low <span class="ot">&lt;-</span> pooled<span class="sc">$</span>qbar <span class="sc">-</span> <span class="fu">qt</span>(<span class="fl">0.975</span>, <span class="at">df =</span> pooled<span class="sc">$</span>df) <span class="sc">*</span> <span class="fu">sqrt</span>(pooled<span class="sc">$</span>t)</span>
+<span id="cb27-57"><a href="#cb27-57" aria-hidden="true" tabindex="-1"></a>    ci_up <span class="ot">&lt;-</span> pooled<span class="sc">$</span>qbar <span class="sc">+</span> <span class="fu">qt</span>(<span class="fl">0.975</span>, <span class="at">df =</span> pooled<span class="sc">$</span>df) <span class="sc">*</span> <span class="fu">sqrt</span>(pooled<span class="sc">$</span>t)</span>
+<span id="cb27-58"><a href="#cb27-58" aria-hidden="true" tabindex="-1"></a>    <span class="co">#browser()</span></span>
+<span id="cb27-59"><a href="#cb27-59" aria-hidden="true" tabindex="-1"></a>    ci_width <span class="ot">&lt;-</span> ci_up <span class="sc">-</span> ci_low</span>
+<span id="cb27-60"><a href="#cb27-60" aria-hidden="true" tabindex="-1"></a>    <span class="fu">data.frame</span>(</span>
+<span id="cb27-61"><a href="#cb27-61" aria-hidden="true" tabindex="-1"></a>      <span class="at">estimate =</span> pooled<span class="sc">$</span>qbar,</span>
+<span id="cb27-62"><a href="#cb27-62" aria-hidden="true" tabindex="-1"></a>      <span class="at">std.error =</span> <span class="fu">sqrt</span>(pooled<span class="sc">$</span>t),</span>
+<span id="cb27-63"><a href="#cb27-63" aria-hidden="true" tabindex="-1"></a>      <span class="at">bias =</span> pooled<span class="sc">$</span>qbar <span class="sc">-</span> true_coefs[term],</span>
+<span id="cb27-64"><a href="#cb27-64" aria-hidden="true" tabindex="-1"></a>      <span class="at">low =</span> ci_low,</span>
+<span id="cb27-65"><a href="#cb27-65" aria-hidden="true" tabindex="-1"></a>      <span class="at">up =</span> ci_up,</span>
+<span id="cb27-66"><a href="#cb27-66" aria-hidden="true" tabindex="-1"></a>      <span class="at">coverage =</span> (ci_low <span class="sc">&lt;</span> true_coefs[term]) <span class="sc">&amp;</span> (ci_up <span class="sc">&gt;</span> true_coefs[term]),</span>
+<span id="cb27-67"><a href="#cb27-67" aria-hidden="true" tabindex="-1"></a>      <span class="at">ci.width =</span> ci_width,</span>
+<span id="cb27-68"><a href="#cb27-68" aria-hidden="true" tabindex="-1"></a>      <span class="at">within.var =</span> pooled<span class="sc">$</span>ubar,</span>
+<span id="cb27-69"><a href="#cb27-69" aria-hidden="true" tabindex="-1"></a>      <span class="at">between.var =</span> pooled<span class="sc">$</span>b,</span>
+<span id="cb27-70"><a href="#cb27-70" aria-hidden="true" tabindex="-1"></a>      <span class="at">total.var =</span> pooled<span class="sc">$</span>t,</span>
+<span id="cb27-71"><a href="#cb27-71" aria-hidden="true" tabindex="-1"></a>      <span class="at">rmsex =</span> <span class="fu">sqrt</span>(<span class="fu">mean</span>((ests <span class="sc">-</span> true_coefs[term])<span class="sc">^</span><span class="dv">2</span>)),</span>
+<span id="cb27-72"><a href="#cb27-72" aria-hidden="true" tabindex="-1"></a>      <span class="at">row.names =</span> term</span>
+<span id="cb27-73"><a href="#cb27-73" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb27-74"><a href="#cb27-74" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb27-75"><a href="#cb27-75" aria-hidden="true" tabindex="-1"></a>  out <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, pooled_results)</span>
+<span id="cb27-76"><a href="#cb27-76" aria-hidden="true" tabindex="-1"></a>  out<span class="sc">$</span>rmsey <span class="ot">&lt;-</span> <span class="fu">sapply</span>(results, <span class="cf">function</span>(x) x<span class="sc">$</span>rmse)</span>
+<span id="cb27-77"><a href="#cb27-77" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(out)</span>
+<span id="cb27-78"><a href="#cb27-78" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># just a single simulation evaluated, to check the function</span></span>
@@ -322,12 +363,18 @@ V1          0.26580964 0.05438334  0.06580964  0.15895736 0.37266192     TRUE
 V2          0.19506739 0.05182688 -0.00493261  0.09323806 0.29689672     TRUE
 V3          0.26584811 0.05473728  0.06584811  0.15830042 0.37339580     TRUE
 V4          0.13439180 0.05111867 -0.06560820  0.03395395 0.23482966     TRUE
-             ci.width  within.var  between.var   total.var        rmse
+             ci.width  within.var  between.var   total.var       rmsex
 (Intercept) 0.1653609 0.001770778 2.061204e-08 0.001770802 0.014793616
 V1          0.2137046 0.002957112 3.631559e-07 0.002957548 0.065811847
 V2          0.2036587 0.002685821 1.700200e-07 0.002686025 0.004946379
 V3          0.2150954 0.002995824 2.882092e-07 0.002996170 0.065849863
-V4          0.2008757 0.002612803 2.628289e-07 0.002613119 0.065609800</code></pre>
+V4          0.2008757 0.002612803 2.628289e-07 0.002613119 0.065609800
+                rmsey
+(Intercept) 0.9350516
+V1          0.9347787
+V2          0.9348996
+V3          0.9349817
+V4          0.9345534</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>VAE_MCAR10 <span class="ot">&lt;-</span> mbased_MCAR_10 <span class="sc">%&gt;%</span> </span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="sc">~</span>.x <span class="sc">%&gt;%</span> <span class="co"># for every simulated multiple imputation....</span></span>
@@ -342,12 +389,18 @@ V1          0.1949470903 0.05707353 -0.0050529097  0.08280905 0.30708513
 V2          0.1997047091 0.05731237 -0.0002952909  0.08709740 0.31231202
 V3          0.2043144763 0.05705445  0.0043144763  0.09221394 0.31641502
 V4          0.1926192856 0.05737666 -0.0073807144  0.07988562 0.30535295
-            coverage  ci.width  within.var  between.var   total.var       rmse
+            coverage  ci.width  within.var  between.var   total.var      rmsex
 (Intercept)    0.939 0.1747383 0.001979246 2.913377e-07 0.001979596 0.03628116
 V1             0.959 0.2242761 0.003263152 1.076014e-06 0.003264443 0.04457838
 V2             0.951 0.2252146 0.003290681 1.071469e-06 0.003291967 0.04565029
 V3             0.947 0.2242011 0.003260421 1.012895e-06 0.003261636 0.04722575
-V4             0.949 0.2254673 0.003297212 1.332618e-06 0.003298811 0.04587386</code></pre>
+V4             0.949 0.2254673 0.003297212 1.332618e-06 0.003298811 0.04587386
+                rmsey
+(Intercept) 0.9846272
+V1          0.9846153
+V2          0.9846324
+V3          0.9846220
+V4          0.9845924</code></pre>
 </div>
 </div>
 </section>
@@ -380,12 +433,18 @@ V1          0.1887931228 0.05733371 -0.0112068772  0.07614346 0.30144279
 V2          0.1992223751 0.05796223 -0.0007776249  0.08533788 0.31310687
 V3          0.2086579569 0.05733476  0.0086579569  0.09600636 0.32130955
 V4          0.1784559919 0.05815654 -0.0215440081  0.06418960 0.29272238
-            coverage  ci.width  within.var  between.var   total.var       rmse
+            coverage  ci.width  within.var  between.var   total.var      rmsex
 (Intercept)    0.918 0.1718372 0.001913539 8.847280e-07 0.001914601 0.03802358
 V1             0.951 0.2252993 0.003290428 3.701959e-06 0.003294870 0.04560443
 V2             0.952 0.2277690 0.003363604 3.504887e-06 0.003367810 0.04697054
 V3             0.946 0.2253032 0.003290589 3.175625e-06 0.003294400 0.04736688
-V4             0.943 0.2285328 0.003385056 4.221967e-06 0.003390123 0.04911502</code></pre>
+V4             0.943 0.2285328 0.003385056 4.221967e-06 0.003390123 0.04911502
+                rmsey
+(Intercept) 0.9672499
+V1          0.9672364
+V2          0.9672611
+V3          0.9672352
+V4          0.9672397</code></pre>
 </div>
 </div>
 </section>
@@ -418,12 +477,18 @@ V1          0.1752240095 0.05792842 -0.0247759905  0.06140410 0.28904392
 V2          0.1984871508 0.05924075 -0.0015128492  0.08208883 0.31488547
 V3          0.2154000494 0.05792546  0.0154000494  0.10158637 0.32921373
 V4          0.1492021142 0.06002347 -0.0507978858  0.03126492 0.26713931
-            coverage  ci.width  within.var  between.var   total.var       rmse
+            coverage  ci.width  within.var  between.var   total.var      rmsex
 (Intercept)    0.885 0.1669194 0.001803990 2.300598e-06 0.001806751 0.04144061
 V1             0.920 0.2276398 0.003351641 1.057048e-05 0.003364326 0.05179695
 V2             0.946 0.2327966 0.003505788 1.083837e-05 0.003518794 0.04875468
 V3             0.944 0.2276274 0.003351766 9.651354e-06 0.003363348 0.04827267
-V4             0.869 0.2358744 0.003595700 1.432165e-05 0.003612886 0.06313049</code></pre>
+V4             0.869 0.2358744 0.003595700 1.432165e-05 0.003612886 0.06313049
+                rmsey
+(Intercept) 0.9371469
+V1          0.9372565
+V2          0.9371474
+V3          0.9371838
+V4          0.9371590</code></pre>
 </div>
 </div>
 </section>
@@ -460,12 +525,18 @@ V1          0.192593674 0.05705649 -0.0074063256  0.08048912 0.30469823
 V2          0.199897352 0.05733141 -0.0001026479  0.08725264 0.31254206
 V3          0.205914650 0.05700899  0.0059146496  0.09390343 0.31792587
 V4          0.188010079 0.05734810 -0.0119899212  0.07533255 0.30068761
-            coverage  ci.width  within.var  between.var   total.var       rmse
+            coverage  ci.width  within.var  between.var   total.var      rmsex
 (Intercept)    0.945 0.1757011 0.002001046 2.704520e-07 0.002001370 0.03629250
 V1             0.950 0.2242091 0.003261403 1.066303e-06 0.003262683 0.04519631
 V2             0.954 0.2252894 0.003292703 1.046593e-06 0.003293959 0.04518698
 V3             0.941 0.2240224 0.003254953 1.038433e-06 0.003256199 0.04684199
-V4             0.948 0.2253551 0.003293648 1.277843e-06 0.003295182 0.04637595</code></pre>
+V4             0.948 0.2253551 0.003293648 1.277843e-06 0.003295182 0.04637595
+                rmsey
+(Intercept) 0.9891809
+V1          0.9891980
+V2          0.9891662
+V3          0.9891853
+V4          0.9891819</code></pre>
 </div>
 </div>
 </section>
@@ -498,12 +569,12 @@ V1          0.18807868 0.05731468 -0.0119213243  0.07546659 0.30069077    0.946
 V2          0.19909248 0.05790498 -0.0009075216  0.08532056 0.31286439    0.954
 V3          0.20940849 0.05729036  0.0094084926  0.09684421 0.32197278    0.942
 V4          0.17223947 0.05815345 -0.0277605291  0.05797924 0.28649970    0.927
-             ci.width  within.var  between.var   total.var       rmse
-(Intercept) 0.1738105 0.001957980 6.816164e-07 0.001958798 0.03976286
-V1          0.2252242 0.003289426 2.914062e-06 0.003292923 0.04628541
-V2          0.2275438 0.003357463 2.991866e-06 0.003361053 0.04610750
-V3          0.2251286 0.003286079 2.656202e-06 0.003289267 0.04808200
-V4          0.2285205 0.003384866 3.773456e-06 0.003389394 0.05023412</code></pre>
+             ci.width  within.var  between.var   total.var      rmsex     rmsey
+(Intercept) 0.1738105 0.001957980 6.816164e-07 0.001958798 0.03976286 0.9740561
+V1          0.2252242 0.003289426 2.914062e-06 0.003292923 0.04628541 0.9741238
+V2          0.2275438 0.003357463 2.991866e-06 0.003361053 0.04610750 0.9740739
+V3          0.2251286 0.003286079 2.656202e-06 0.003289267 0.04808200 0.9741041
+V4          0.2285205 0.003384866 3.773456e-06 0.003389394 0.05023412 0.9740800</code></pre>
 </div>
 </div>
 </section>
@@ -536,12 +607,12 @@ V1          0.17823589 0.05785890 -0.021764112  0.06455307 0.29191870    0.946
 V2          0.19898473 0.05917775 -0.001015272  0.08271054 0.31525891    0.946
 V3          0.21563612 0.05785582  0.015636118  0.10195975 0.32931249    0.931
 V4          0.14240681 0.05994914 -0.057593190  0.02461611 0.26019751    0.845
-             ci.width  within.var  between.var   total.var       rmse
-(Intercept) 0.1700226 0.001872168 2.132251e-06 0.001874727 0.04378732
-V1          0.2273656 0.003345177 9.568293e-06 0.003356659 0.04854621
-V2          0.2325484 0.003500155 9.726081e-06 0.003511826 0.04726087
-V3          0.2273527 0.003345131 8.199126e-06 0.003354970 0.04868776
-V4          0.2355814 0.003587495 1.340531e-05 0.003603581 0.06808491</code></pre>
+             ci.width  within.var  between.var   total.var      rmsex     rmsey
+(Intercept) 0.1700226 0.001872168 2.132251e-06 0.001874727 0.04378732 0.9424963
+V1          0.2273656 0.003345177 9.568293e-06 0.003356659 0.04854621 0.9424319
+V2          0.2325484 0.003500155 9.726081e-06 0.003511826 0.04726087 0.9424136
+V3          0.2273527 0.003345131 8.199126e-06 0.003354970 0.04868776 0.9424429
+V4          0.2355814 0.003587495 1.340531e-05 0.003603581 0.06808491 0.9424721</code></pre>
 </div>
 </div>
 </section>
@@ -552,7 +623,7 @@ V4          0.2355814 0.003587495 1.340531e-05 0.003603581 0.06808491</code></pr
 <div class="cell">
 <div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Sys.time</span>() <span class="sc">-</span> st</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Time difference of 47.01233 secs</code></pre>
+<pre><code>Time difference of 58.54649 secs</code></pre>
 </div>
 </div>
 </section>

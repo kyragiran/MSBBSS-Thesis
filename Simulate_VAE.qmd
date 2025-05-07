@@ -99,18 +99,57 @@ mbased_MCAR_10 <-
 
 ### Evaluate MCAR 10% 
 ```{r}
-# Evaluation function
+# # Evaluation function
+# evaluate_vae_imputation <- function(imputed_list, true_coefs) {
+#   terms <- names(true_coefs)
+#   results <- lapply(imputed_list, function(data) {
+#     model <- lm(y ~ V1 + V2 + V3 + V4, data = data)
+#     summary_model <- summary(model)
+#     list(est = coef(model), var = summary_model$coefficients[, "Std. Error"]^2)
+#   })
+#   
+#   pooled_results <- lapply(terms, function(term) {
+#     ests <- sapply(results, function(x) x$est[term])
+#     vars <- sapply(results, function(x) x$var[term])
+#     #browser()
+#     ncases <- imputed_list[[1]] %>% nrow() # number of complete data cases
+#     nparam <- length(terms) # number of model parameters
+#     pooled <- pool.scalar(Q = ests, U = vars, n = ncases - nparam)
+#     ci_low <- pooled$qbar - qt(0.975, df = pooled$df) * sqrt(pooled$t)
+#     ci_up <- pooled$qbar + qt(0.975, df = pooled$df) * sqrt(pooled$t)
+#     #browser()
+#     ci_width <- ci_up - ci_low
+#     data.frame(
+#       estimate = pooled$qbar,
+#       std.error = sqrt(pooled$t),
+#       bias = pooled$qbar - true_coefs[term],
+#       low = ci_low,
+#       up = ci_up,
+#       coverage = (ci_low < true_coefs[term]) & (ci_up > true_coefs[term]),
+#       ci.width = ci_width,
+#       within.var = pooled$ubar,
+#       between.var = pooled$b,
+#       total.var = pooled$t,
+#       rmse = sqrt(mean((ests - true_coefs[term])^2)),
+#       row.names = term
+#     )
+#   })
+#   return(do.call(rbind, pooled_results))
+# }
+
 evaluate_vae_imputation <- function(imputed_list, true_coefs) {
   terms <- names(true_coefs)
   results <- lapply(imputed_list, function(data) {
     model <- lm(y ~ V1 + V2 + V3 + V4, data = data)
+    rmse <- sqrt(mean((predict(model) - model$model$y)^2))
     summary_model <- summary(model)
-    list(est = coef(model), var = summary_model$coefficients[, "Std. Error"]^2)
+    list(est = coef(model), var = summary_model$coefficients[, "Std. Error"]^2, rmse = rmse)
   })
   
   pooled_results <- lapply(terms, function(term) {
     ests <- sapply(results, function(x) x$est[term])
     vars <- sapply(results, function(x) x$var[term])
+    rmse <- sapply(results, function(x) x$rmse)
     #browser()
     ncases <- imputed_list[[1]] %>% nrow() # number of complete data cases
     nparam <- length(terms) # number of model parameters
@@ -130,13 +169,16 @@ evaluate_vae_imputation <- function(imputed_list, true_coefs) {
       within.var = pooled$ubar,
       between.var = pooled$b,
       total.var = pooled$t,
-      rmse = sqrt(mean((ests - true_coefs[term])^2)),
+      rmsex = sqrt(mean((ests - true_coefs[term])^2)),
       row.names = term
     )
   })
-  return(do.call(rbind, pooled_results))
+  out <- do.call(rbind, pooled_results)
+  out$rmsey <- sapply(results, function(x) x$rmse)
+  return(out)
 }
 ```
+
 
 ```{r}
 # just a single simulation evaluated, to check the function
